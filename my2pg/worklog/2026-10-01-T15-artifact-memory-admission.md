@@ -1,0 +1,31 @@
+# 2026-10-01 — T15 artifact memory admission
+
+Status: scheduler API and unit seam only. Lease is `src/pipeline/scheduler.rs` and its colocated tests; runner artifact startup/report/recovery wiring remains a later coordinator increment. T13 and T15 remain open.
+
+## Reference research before code
+
+Read `docs/reference-coding.md`, `docs/architecture.md` (streaming/memory and COPY recovery), `docs/agent-tasks.md`, and `worklog/2026-10-01-T15-artifact-protocol-contract.md`. RTK/Ponytail guidance applies; the implementation uses the existing Tokio semaphore model and no new abstraction beyond the concrete run-lifetime artifact reservation.
+
+Current XERJ `project-my2pg` query `DurableArtifacts OwnedRejectBudget real runner recovery Resources memory reservation` returned the scheduler and T15 protocol/admission contract at indexed project revision `db28c459a8a3caf45b07e9e72bcbc9fd3194c762`. Read the original `pipeline/scheduler.rs` admission and seven colocated tests, config validator and its exact `P−1/P` cases, `t13_concurrency.rs` memory helper, and current runner admission. The contract defines `A` as the writer's counted fixed buffers, payload cap, ledger and control state, and requires table count `floor((M−A)/P)`; a schema-only run still requires `M >= A`.
+
+XERJ `project-pgloader` query `bad rows reject COPY retry batch report` returned pinned revision `231ab86778ca5ffd7de40878714760c8b4860cdf`; read `clojure/src/pgloader/batch.clj:61-225` and `test/fk-reject.load`. Pgloader rolls back a failed COPY attempt, bisects, and commits good subranges, while its reject-file path does not establish a bounded global artifact reservation or durable ACK. No code/policy is copied. XERJ `ref-rust-postgres` query `COPY transaction finish rollback error` returned pinned revision `1084ca8f5b5302e161892f2fa40abf71b4060c10`; read `tokio-postgres/src/copy_in.rs:100-150` and adjacent `tests/test/main.rs:739-777`. The failed COPY is aborted by dropping its sink, while `finish` completes COPY but remains distinct from transaction commit. This confirms that artifact admission must not alter database commit accounting.
+
+## Chosen adaptation and proof
+
+Add an explicit `Admission::new_with_artifact_reservation` entry point while keeping `Admission::new` as the zero-artifact helper used by existing independent scheduler cases. Validate `A <= M`, compute table concurrency from `M-A`, and report minimum `A+P` for data work or `A` when no table pipeline is needed. `Resources` constructs the byte semaphore at `M` and immediately removes an owned `A` permit into a run-lifetime slot before exposing any table/batch acquisition; the caller takes that exact permit for `DurableArtifacts`. Dropping the returned permit releases the reserved bytes. Do not change COPY transaction or reject ordering.
+
+Add independent tests for exact `A+P`, `A+2P`, one byte below each minimum, schema-only `A−1/A`, permit visibility before table leases, and release after dropping the writer-owned reservation. Existing zero-artifact tests remain regression coverage. This slice will not claim production reservation until the runner uses the new constructor and transfers the permit to the writer.
+
+## Implementation and verification
+
+`Admission::new_with_artifact_reservation` now validates the total reservation and computes active table capacity from the remaining byte budget. `Resources::new` takes the reservation from the shared semaphore before it exposes table/batch acquisition; `take_artifact_reservation` transfers that owned permit to the caller. The compatibility helper `Admission::new` retains zero-reservation behavior for standalone resource tests. This API is not wired into `pipeline::run` yet.
+
+Passed: `bin/cargo test --lib` (88 passed, 3 ignored), focused scheduler tests (9 passed), `bin/cargo clippy --all-targets --all-features -- -D warnings`, `bin/cargo fmt --check`, and `git diff --check`. The first strict Clippy run caught two redundant `usize` casts in the new tests; both were removed and strict Clippy passed on rerun. No database fixture was used. The runner still uses zero-artifact `Admission::new` and synchronous `RunArtifacts`; do not count T13/T15 production admission or durable-writer integration as complete.
+
+## Renewed accepted-reject workspace lease — research before code
+
+The T15 runner integration owner identified that durable reject retention must share the already admitted per-table workspace permit `W`: producer cancellation can drop `TablePermit` while the artifact actor still owns accepted raw values. A new budget or clone of the raw bytes would double-count or evade the global byte bound.
+
+Fresh XERJ `project-my2pg` query `TablePermit workspace permit retained accepted reject producer cancellation shared batch lease` at indexed revision `db28c459a8a3caf45b07e9e72bcbc9fd3194c762` returned `src/pipeline/scheduler.rs:241` and the T13 scheduling contract. Read current `TablePermit`, `Resources::table`, memory-layout tests, producer/reject ownership, and T13 queue-cancellation cases. `TablePermit` currently owns `_workspace: OwnedSemaphorePermit` and exposes no retained lease. Fresh `ref-dmt-rs` query `owned permit retained after producer cancellation shared batch lease` at pin `4e8015f7e841dbdf9df01e953aeb3948dfb3199a` returned orchestrator task dispatch and transfer channel code; read `orchestrator/mod.rs:1190-1260` and `transfer/mod.rs:450-620`. Its semaphore permit remains local to an execution task, and its write jobs carry row data without a durable artifact receipt or shared byte reservation. No reference implementation supplies the needed retention contract.
+
+Adapt the existing counted `W` permit into `Arc<OwnedSemaphorePermit>` when a table lease is created and expose a crate-private accessor returning a clone of that same Arc. This lets `RawRetention` and the durable artifact actor keep the producer's already-admitted workspace bytes alive until durable ACK/teardown, even when the producer is cancelled. Add a colocated regression proving the workspace capacity returns only after both the table lease and retained Arc are dropped. No extra semaphore, copied row payload, public API, or larger reservation is introduced.

@@ -1,0 +1,13 @@
+{
+  "xerj_version": "1.0.0-rc.80",
+  "endpoint": "http://127.0.0.1:19320",
+  "corpora": [
+    {"prefix": "project-my2pg", "path": "my2pg", "url": null, "commit": null, "license": "not selected", "purpose": "Current Rust implementation, specifications, tests and task worklogs"},
+    {"prefix": "project-pgloader", "path": "pgloader", "url": "https://github.com/dimitri/pgloader", "commit": "231ab86778ca5ffd7de40878714760c8b4860cdf", "license": "PostgreSQL", "purpose": "Original Lisp/Clojure MySQL migration behavior, casts, recovery and fixtures"},
+    {"prefix": "ref-paganel", "path": "references/paganel", "url": "https://github.com/stanstork/paganel", "commit": "ced0a3c953bcf63bba6085bf2b8b9fc75cbbeddc", "license": "AGPL-3.0-or-later (root); inspect component licenses", "purpose": "Closest Rust schema/data migration engine: schema conversion, verification, batching"},
+    {"prefix": "ref-dmt-rs", "path": "references/dmt-rs", "url": "https://github.com/johndauphine/dmt-rs", "commit": "4e8015f7e841dbdf9df01e953aeb3948dfb3199a", "license": "MIT declared in Cargo.toml; no root LICENSE file found", "purpose": "Rust MySQL-to-PostgreSQL orchestration, COPY, backpressure and cancellation"},
+    {"prefix": "ref-mysql_async", "path": "references/mysql_async", "url": "https://github.com/blackbeam/mysql_async", "commit": "d7525dcb1d35f3d60101a2e95e84171c3d3ac4a5", "license": "MIT OR Apache-2.0", "purpose": "Proposed MySQL driver's row streaming, pool cleanup and protocol tests"},
+    {"prefix": "ref-rust-postgres", "path": "references/rust-postgres", "url": "https://github.com/rust-postgres/rust-postgres", "commit": "1084ca8f5b5302e161892f2fa40abf71b4060c10", "license": "MIT OR Apache-2.0", "purpose": "Proposed tokio-postgres driver's COPY sink, transactions and cancellation"},
+    {"prefix": "ref-indicatif", "path": "references/indicatif", "url": "https://github.com/console-rs/indicatif", "commit": "53cf51c6da16789f9a29a7a1cfdf8e364dcb0868", "license": "MIT", "purpose": "TTY detection, stderr progress, concurrent bars and output tests"}
+  ]
+}

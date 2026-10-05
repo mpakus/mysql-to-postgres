@@ -1,0 +1,69 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.09kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/clojure:temurin-21-jammy
+#2 ...
+
+#3 [auth] library/eclipse-temurin:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#4 [auth] library/clojure:pull token for registry-1.docker.io
+#4 DONE 0.0s
+
+#5 [internal] load metadata for docker.io/library/eclipse-temurin:21-jre-jammy
+#5 DONE 1.3s
+
+#2 [internal] load metadata for docker.io/library/clojure:temurin-21-jammy
+#2 DONE 1.5s
+
+#6 [internal] load .dockerignore
+#6 transferring context: 85B done
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 855.75kB 0.0s done
+#7 DONE 0.0s
+
+#8 [builder 2/7] WORKDIR /app
+#8 CACHED
+
+#9 [builder 4/7] COPY build.clj .
+#9 ERROR: failed to calculate checksum of ref bd2s8audzq9x8qxljl45jxbt7::bkjn178ud0ct59so8sne1pvx8: "/build.clj": not found
+
+#10 [builder 5/7] COPY src/ src/
+#10 CACHED
+
+#11 [builder 3/7] COPY deps.edn .
+#11 ERROR: failed to calculate checksum of ref bd2s8audzq9x8qxljl45jxbt7::bkjn178ud0ct59so8sne1pvx8: "/deps.edn": not found
+
+#12 [builder 6/7] COPY resources/ resources/
+#12 ERROR: failed to calculate checksum of ref bd2s8audzq9x8qxljl45jxbt7::bkjn178ud0ct59so8sne1pvx8: "/resources": not found
+
+#13 [builder 1/7] FROM docker.io/library/clojure:temurin-21-jammy@sha256:a29b491698a945543f0337128153cb7a0a3806fe26dc0ab198882962c73b9d30
+#13 resolve docker.io/library/clojure:temurin-21-jammy@sha256:a29b491698a945543f0337128153cb7a0a3806fe26dc0ab198882962c73b9d30 done
+#13 CANCELED
+
+#14 [stage-1 1/4] FROM docker.io/library/eclipse-temurin:21-jre-jammy@sha256:e9aaf73145bbd1f9f6ec7f6867dd75a44f34b1a6c32a813504bf4129be2d09d7
+#14 resolve docker.io/library/eclipse-temurin:21-jre-jammy@sha256:e9aaf73145bbd1f9f6ec7f6867dd75a44f34b1a6c32a813504bf4129be2d09d7 done
+#14 CANCELED
+------
+ > [builder 3/7] COPY deps.edn .:
+------
+------
+ > [builder 4/7] COPY build.clj .:
+------
+------
+ > [builder 6/7] COPY resources/ resources/:
+------
+Dockerfile:15
+--------------------
+  13 |     COPY build.clj .
+  14 |     COPY src/ src/
+  15 | >>> COPY resources/ resources/
+  16 |     
+  17 |     # Build the uberjar
+--------------------
+ERROR: failed to build: failed to solve: failed to compute cache key: failed to calculate checksum of ref bd2s8audzq9x8qxljl45jxbt7::bkjn178ud0ct59so8sne1pvx8: "/resources": not found

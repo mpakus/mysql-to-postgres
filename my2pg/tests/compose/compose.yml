@@ -1,0 +1,47 @@
+services:
+  mysql:
+    image: ${MY2PG_MYSQL_IMAGE:?pinned MySQL image required}
+    platform: ${MY2PG_PLATFORM}
+    labels:
+      org.my2pg.integration: "true"
+    command: ["--ssl-ca=/tls/ca.pem", "--ssl-cert=/tls/server.pem", "--ssl-key=/tls/server-key.pem"]
+    volumes:
+      - "${MY2PG_TLS_DIR:?TLS directory required}:/tls:ro"
+    environment:
+      MYSQL_ROOT_PASSWORD: integration-root
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: source
+      MYSQL_USER: my2pg
+      MYSQL_PASSWORD: integration-only
+    ports:
+      - "127.0.0.1::3306"
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_ROOT_PASSWORD mysql --protocol=TCP -h 127.0.0.1 -uroot -Nse 'SELECT 1'"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+    cpus: 1.0
+    mem_limit: 1g
+  postgres:
+    image: ${MY2PG_POSTGRES_IMAGE:?pinned PostgreSQL image required}
+    platform: ${MY2PG_PLATFORM}
+    labels:
+      org.my2pg.integration: "true"
+    volumes:
+      - "${MY2PG_TLS_DIR:?TLS directory required}:/tls:ro"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - "cp /tls/server-key.pem /tmp/server-key.pem && chown postgres:postgres /tmp/server-key.pem && chmod 600 /tmp/server-key.pem && exec docker-entrypoint.sh postgres -c ssl=on -c ssl_ca_file=/tls/ca.pem -c ssl_cert_file=/tls/server.pem -c ssl_key_file=/tmp/server-key.pem -c hba_file=/tls/pg_hba.conf"
+    environment:
+      POSTGRES_USER: my2pg
+      POSTGRES_PASSWORD: integration-only
+      POSTGRES_DB: target
+    ports:
+      - "127.0.0.1::5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U my2pg -d target"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+    cpus: 1.0
+    mem_limit: 512m

@@ -1,0 +1,7 @@
+LOAD DATABASE
+ FROM mysql://my2pg:integration-only@mysql:3306/source?sslMode=VERIFY_CA&trustCertificateKeyStoreUrl=file:/suite/tls/truststore.p12&trustCertificateKeyStorePassword=integration-only&trustCertificateKeyStoreType=PKCS12
+ INTO postgresql://my2pg:integration-only@postgres:5432/target?sslmode=verify-ca&sslrootcert=/suite/tls/ca.pem
+ WITH concurrency = 1, workers = 1, include no drop, create tables, create indexes, reset sequences, quote identifiers
+ INCLUDING ONLY TABLE NAMES MATCHING 'users'
+ ALTER SCHEMA 'source' RENAME TO 'baseline_v4'
+ CAST type datetime to timestamp;

@@ -1,0 +1,10 @@
+.git
+.rtk
+target
+worklog
+docs
+tests
+references
+.reference-coding
+**/.DS_Store
+**/*.log

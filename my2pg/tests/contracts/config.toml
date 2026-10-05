@@ -1,0 +1,11 @@
+version = 1
+[source]
+url_env = "MY2PG_MYSQL_URL"
+consistency = "frozen"
+[target]
+url_env = "MY2PG_POSTGRES_URL"
+schema = "legacy"
+[tables]
+[[tables.rename]]
+source = "CamelCase"
+target = "camel_case"

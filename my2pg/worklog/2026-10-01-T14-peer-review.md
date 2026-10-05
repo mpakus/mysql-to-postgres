@@ -1,0 +1,35 @@
+# T14 — independent production connection peer review
+
+Reviewer C/E. Read-only production/test review; write lease is this worklog. Reviewed working changes against foundation `66c92db30cc1ba0a3ecdd9c0ac3ae4fe253f270f`, `worklog/2026-10-01-T14-auth-connections.md`, AUTH/session requirements, source/target production connection code, offline validation, and adjacent T05/T07/driver/T14 tests. RTK and Ponytail guidance remains active. Coordinator-owned ENUM projection/type-collision metadata changes in the same files are excluded from this review.
+
+## Reference evidence
+
+- XERJ `project-my2pg / T14 password TLS initialization deadline` returned the actual T14 worklog and peer/session/passfile cases at indexed revision66c92db. Read complete originals after lookup.
+- XERJ `ref-mysql_async / with_disable_built_in_roots ClientIdentity` returned SslOpts and Rustls PEM identity code at `d7525dcb1d35f3d60101a2e95e84171c3d3ac4a5`. Read options, PEM-key adjacent tests and conn/mod.rs580–645. TLS is required when configured; default hostname/CA verification remains enabled. The copied generic reference test helper's insecure flags were correctly rejected by production code.
+- XERJ `ref-rust-postgres / password passfile ssl_mode connect_timeout` returned config/connect/auth code at `1084ca8f5b5302e161892f2fa40abf71b4060c10`. Read config host parsing, connect_once/connect_tls, postgres-native-tls hostname plumbing and adjacent plain/MD5/SCRAM auth tests. Socket connect_timeout does not cover the later auth/session phases, so the outer initialization timeout is justified. Driver-normalized Tcp identity removes IPv6 brackets/percent encoding for passfile lookup; encoded Unix/multiple-host inputs are correctly blocked before networking.
+
+## Findings communicated to coordinator and implementer
+
+1. **P2 — prepare known-invalid source session values before network/authentication.** `src/mysql/mod.rs` constructs Conn near211 before validating source time_zone/whitelist and parsing numeric variables near241–258. `src/config/validation.rs::sessions` near445 validates keys/size/UTC but does not parse numeric source values. Therefore `net_read_timeout='oops'` is offline-valid even though production can never accept it; a stalled endpoint produces the10s initialization failure instead of the already knowable Configuration failure. Root accepted this finding and authorized F to prepare typed source sessions before Conn::new and align offline numeric validation. No production edit was made by this reviewer. Real server clamping/readback is a separate runtime check and should remain; do not invent one blanket numeric range across MySQL versions.
+2. **P2 — align offline-valid deterministic target aliases with transport policy.** Offline sessions accepts timezone `Etc/UTC`/`+00:00` and case-insensitive DateStyle `iso, ymd`; target connect requires exact `UTC`/`ISO, YMD`. Valid local configuration is consequently rejected by the production connector. Sent this concrete mismatch to F, recommending canonicalization of proved-equivalent aliases or consistent offline rejection. Unsupported/ambiguous timezone changes must remain blocked.
+
+## Behavior accepted by source/test review
+
+- Existing public connection/COPY/catalog signatures remain stable; both async complete initialization futures have fixed10s deadlines. MySQL initialization has a dedicated operational deadline variant; target errors remain static/sanitized. Source guard and target task ownership still close failed initialized resources. Synchronous filesystem reads are explicitly outside a preemptible timer guarantee; the worklog does not claim otherwise.
+- Explicit CA trust excludes platform roots on both paths; production never toggles insecure certificate/hostname flags. Native PostgreSQL PEM identity and Rustls MySQL identity remain typed configuration, not URL overrides. Target SslMode::Require plus native connector verification prevents plaintext fallback. Actual scoped TLS peers observe protocol SSL requests and handshake rejection for wrong-host/expired-server cases; database mTLS cases distinguish PostgreSQL CN matching from MySQL REQUIRE X509's documented chain-only policy.
+- Percent-encoded credentials use the driver parsers; errors omit raw URLs/password/server DETAIL. Target passfiles match normalized host/port/database/user, first-match wildcards and colon/backslash escapes. Reader revalidates the opened descriptor's regular/private status and bounds reads at1MiB+1, preventing unbounded growth after the first metadata check. Missing, malformed, no-match and insecure passfiles remain fatal.
+- MySQL numeric sessions now bind UInt and read actual values back, so warning-driven clamps are not silently accepted. Dynamic values are bound; session names are quoted/allowlisted. Target values use bound set_config and deterministic UTC/ISO/on defaults. Failures are observed instead of swallowed.
+
+## Independent execution and limits
+
+Executed `rtk run 'bin/cargo test --locked --test integration t14_auth -- --nocapture'`. **3 ordinary tests passed in10.01s;5 DB/certificate tests were explicitly ignored and are not counted as independent runtime passes.** The three independently exercise explicit local identity/URL-option rejection, a real IPv6 password peer and both real10s stalled handshake/session socket closures. Their accepted peers are scoped ephemeral listeners; no shared database role/schema was changed.
+
+The implementer's recorded full8-case production run on its owned MySQL8.4/PostgreSQL16 fixture was reviewed as supplied evidence, not rerun concurrently against fixed T14 role names. Coordinator owns the coherent fresh full-lane gate. Full cross-version AUTH, certificate bundles/rotation and production deployment are not claimed here. No additional concrete TLS/passfile defect was found in the reviewed changes. T14 acceptance remains conditional on the two validation-policy corrections and coordinator's fresh suite.
+
+Status: read-only peer review delivered; production corrections belong to F/root. Continuing only the renewed T12 test/worklog lease.
+
+## Correction review
+
+F corrected both findings under its authorized lease. Re-read the prepared source session map before Conn::new and the offline numeric/canonical target-session checks. Known bad numeric/UTC/name/size/NUL values now return static Configuration without a socket; runtime numeric readback remains in place for actual server clamps. Offline timezone/DateStyle now require the same canonical UTC/ISO, YMD forms as production. No target TLS/passfile/COPY API changed.
+
+Independently executed the new `invalid_source_sessions_fail_before_a_stalled_endpoint_is_contacted` test:1 passed in0.02s, proving eight known-invalid settings open no real listening endpoint. Independently executed offline `tls_and_session_policy_cannot_be_downgraded_indirectly`:1 passed. Strict all-target Clippy passed after the corrections. Both P2 findings are resolved; no outstanding concrete connection-policy defect remains in this review. Coordinator's fresh complete DB/auth gate and T22 cross-version matrix remain separate acceptance work.

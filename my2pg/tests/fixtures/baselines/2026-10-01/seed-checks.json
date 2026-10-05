@@ -1,0 +1,62 @@
+[
+  {
+    "service": "mysql",
+    "statement": "SELECT COUNT(*) FROM source.users",
+    "passed": true
+  },
+  {
+    "service": "mysql",
+    "statement": "SELECT COUNT(*) FROM source.orders",
+    "passed": true
+  },
+  {
+    "service": "mysql",
+    "statement": "SELECT COUNT(*) FROM source.empty_table",
+    "passed": true
+  },
+  {
+    "service": "mysql",
+    "statement": "SELECT amount FROM source.users WHERE id=1",
+    "passed": true
+  },
+  {
+    "service": "mysql",
+    "statement": "SELECT HEX(payload) FROM source.users WHERE id=1",
+    "passed": true
+  },
+  {
+    "service": "mysql",
+    "statement": "SELECT unsigned_big FROM source.numeric_edges WHERE id=1",
+    "passed": true
+  },
+  {
+    "service": "mysql",
+    "statement": "SELECT duration FROM source.numeric_edges WHERE id=1",
+    "passed": true
+  },
+  {
+    "service": "mysql",
+    "statement": "SELECT HEX(value) FROM source.all_bytes",
+    "passed": true
+  },
+  {
+    "service": "mysql",
+    "statement": "SELECT plugin FROM mysql.user WHERE user='my2pg'",
+    "passed": true
+  },
+  {
+    "service": "mysql",
+    "statement": "SELECT COUNT(*) FROM source.existing_view",
+    "passed": true
+  },
+  {
+    "service": "postgres",
+    "statement": "SELECT sentinel FROM public.users WHERE id=999",
+    "passed": true
+  },
+  {
+    "service": "postgres",
+    "statement": "SHOW ssl",
+    "passed": true
+  }
+]

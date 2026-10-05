@@ -1,0 +1,64 @@
+{
+  "upstream_revision": "231ab86778ca5ffd7de40878714760c8b4860cdf",
+  "loader": "v4",
+  "image_id": "sha256:c0d9e27a869deb46df9f94c2487dfb01e60a6fbf41785ef844d13655cd4375e9",
+  "architecture": "arm64",
+  "source_target": {
+    "mysql": "8.4.11",
+    "postgres": "16.15"
+  },
+  "fixture_sha256": {
+    "mysql.sql": "efbe952f0397182d11caf187cc806b741abd642799a6d7ad8e554c3bf49f7c56",
+    "postgres.sql": "af1413b85316897eb0a81f249713131fddc929f515d21840b44cb835b1c5e504"
+  },
+  "load_sha256": "3c5f160cd86c1033c6880834dd3901650b7e78ce2a7fafde803def078ae11780",
+  "exit_code": 0,
+  "elapsed_seconds_informational": 2.7632045,
+  "benchmark": false,
+  "correctness": "failed",
+  "command": [
+    "docker",
+    "run",
+    "--rm",
+    "--label",
+    "org.my2pg.integration=true",
+    "--network",
+    "my2pg-mysql84-pg16-dad0a38e415d_default",
+    "-v",
+    "/Users/renatibragimov/www/pg/my2pg/target/integration/my2pg-mysql84-pg16-dad0a38e415d:/suite:ro",
+    "my2pg-reference-v4:231ab867",
+    "/suite/baseline-v4.load"
+  ],
+  "checks": [
+    {
+      "query": "SELECT count(*) FROM \"baseline_v4\".users",
+      "expected": "3",
+      "actual": "3"
+    },
+    {
+      "query": "SELECT amount::text FROM \"baseline_v4\".users WHERE id=1",
+      "expected": "1234567890123456789012.12345678",
+      "actual": "1234567890123456789012.12345678"
+    },
+    {
+      "query": "SELECT encode(payload, 'hex') FROM \"baseline_v4\".users WHERE id=1",
+      "expected": "00015c09ff",
+      "actual": "5830303031356330396666"
+    },
+    {
+      "query": "SELECT note IS NULL FROM \"baseline_v4\".users WHERE id=1",
+      "expected": "t",
+      "actual": "t"
+    },
+    {
+      "query": "SELECT note = '' FROM \"baseline_v4\".users WHERE id=4",
+      "expected": "t",
+      "actual": "t"
+    },
+    {
+      "query": "SELECT sentinel FROM public.users WHERE id=999",
+      "expected": "must-survive",
+      "actual": "must-survive"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+2026-10-01T18:39:24.006000Z LOG pgloader version "3.6.10~devel"
+2026-10-01T18:39:24.010000Z LOG Data errors in '/tmp/pgloader/'
+2026-10-01T18:39:24.010000Z LOG Parsing commands from file #P"/suite/baseline-v3.load"
+2026-10-01T18:39:24.195000Z LOG Migrating from #<MYSQL-CONNECTION mysql://my2pg@mysql:3306/source {10088E8A53}>
+2026-10-01T18:39:24.195000Z LOG Migrating into #<PGSQL-CONNECTION pgsql://my2pg@postgres:5432/target {10088E8F83}>
+2026-10-01T18:39:24.700000Z LOG report summary reset
+             table name     errors       rows      bytes      total time
+-----------------------  ---------  ---------  ---------  --------------
+        fetch meta data          0          1                     0.080s
+         Create Schemas          0          0                     0.003s
+       Create SQL Types          0          0                     0.008s
+          Create tables          0          1                     0.020s
+         Set Table OIDs          0          1                     0.008s
+-----------------------  ---------  ---------  ---------  --------------
+    baseline_v3."users"          0          3     0.2 kB          0.078s
+-----------------------  ---------  ---------  ---------  --------------
+COPY Threads Completion          0          1                     0.078s
+        Reset Sequences          0          1                     0.075s
+    Create Foreign Keys          0          0                     0.002s
+        Create Triggers          0          0                     0.000s
+        Set Search Path          0          1                     0.002s
+       Install Comments          0          0                     0.000s
+-----------------------  ---------  ---------  ---------  --------------
+      Total import time          ✓          3     0.2 kB          0.157s

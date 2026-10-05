@@ -1,0 +1,23 @@
+{
+  "database": "source_fixture",
+  "server_version": "8.4.8",
+  "server_comment": "MySQL Community Server - GPL",
+  "auto_increment_increment": 1,
+  "auto_increment_offset": 1,
+  "tables": [{
+    "name": "CamelCase", "engine": "InnoDB", "is_view": false,
+    "charset": "utf8mb4", "collation": "utf8mb4_bin", "comment": "quoted ' comment",
+    "estimated_rows": 2, "next_auto_increment": 4294967295,
+    "columns": [{
+      "name": "ID", "ordinal": 1, "data_type": "int", "column_type": "int unsigned",
+      "nullable": false, "default": null, "default_is_expression": false,
+      "extra": "auto_increment", "charset": null, "collation": null,
+      "generation_expression": null, "numeric_precision": 10, "numeric_scale": 0,
+      "datetime_precision": null, "character_length": null, "comment": "source identity"
+    }],
+    "indexes": [{"name": "PRIMARY", "primary": true, "unique": true, "kind": "BTREE",
+      "parts": [{"column": "ID", "expression": null, "prefix_length": null, "descending": false}]}],
+    "foreign_keys": [], "checks": []
+  }],
+  "unsupported_objects": [{"object": "legacy_event", "kind": "event", "reason": "manual migration"}]
+}

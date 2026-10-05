@@ -1,0 +1,561 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.09kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/clojure:temurin-21-jammy
+#2 ...
+
+#3 [internal] load metadata for docker.io/library/eclipse-temurin:21-jre-jammy
+#3 DONE 0.5s
+
+#2 [internal] load metadata for docker.io/library/clojure:temurin-21-jammy
+#2 DONE 0.5s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 485.25kB 0.0s done
+#5 DONE 0.0s
+
+#6 [builder 1/7] FROM docker.io/library/clojure:temurin-21-jammy@sha256:a29b491698a945543f0337128153cb7a0a3806fe26dc0ab198882962c73b9d30
+#6 resolve docker.io/library/clojure:temurin-21-jammy@sha256:a29b491698a945543f0337128153cb7a0a3806fe26dc0ab198882962c73b9d30 0.0s done
+#6 DONE 0.1s
+
+#7 [stage-1 1/4] FROM docker.io/library/eclipse-temurin:21-jre-jammy@sha256:e9aaf73145bbd1f9f6ec7f6867dd75a44f34b1a6c32a813504bf4129be2d09d7
+#7 resolve docker.io/library/eclipse-temurin:21-jre-jammy@sha256:e9aaf73145bbd1f9f6ec7f6867dd75a44f34b1a6c32a813504bf4129be2d09d7 0.0s done
+#7 sha256:e68382b26852af621b179e9c17bc9394838df450be8a15eb81512097d192f082 0B / 2.46kB 0.2s
+#7 sha256:e68382b26852af621b179e9c17bc9394838df450be8a15eb81512097d192f082 2.46kB / 2.46kB 0.2s done
+#7 sha256:10fd64a46cc5957d6a6565949ad86d420d365b0ff7947ce02eaa405af8f1cf01 159B / 159B 0.2s done
+#7 sha256:cabaa82ef032dc31156ff734a522a97ab0ba09c4773cb3374a5bb1e4c9d551a1 0B / 52.27MB 0.3s
+#7 sha256:6ed38533225ab96284d0a7bda3e8b9e3b639358f247e1171c8730331834d0a85 0B / 16.05MB 0.2s
+#7 sha256:cabaa82ef032dc31156ff734a522a97ab0ba09c4773cb3374a5bb1e4c9d551a1 3.15MB / 52.27MB 0.5s
+#7 sha256:e4be80ccf23625c2b9f55507e92a0bef3343c6a3f274f9d593c52bd4d2fa2945 0B / 27.68MB 0.2s
+#7 sha256:cabaa82ef032dc31156ff734a522a97ab0ba09c4773cb3374a5bb1e4c9d551a1 7.34MB / 52.27MB 0.6s
+#7 sha256:6ed38533225ab96284d0a7bda3e8b9e3b639358f247e1171c8730331834d0a85 1.05MB / 16.05MB 0.5s
+#7 sha256:cabaa82ef032dc31156ff734a522a97ab0ba09c4773cb3374a5bb1e4c9d551a1 11.53MB / 52.27MB 0.8s
+#7 sha256:6ed38533225ab96284d0a7bda3e8b9e3b639358f247e1171c8730331834d0a85 3.15MB / 16.05MB 0.6s
+#7 sha256:cabaa82ef032dc31156ff734a522a97ab0ba09c4773cb3374a5bb1e4c9d551a1 15.73MB / 52.27MB 0.9s
+#7 sha256:6ed38533225ab96284d0a7bda3e8b9e3b639358f247e1171c8730331834d0a85 5.24MB / 16.05MB 0.8s
+#7 sha256:e4be80ccf23625c2b9f55507e92a0bef3343c6a3f274f9d593c52bd4d2fa2945 2.10MB / 27.68MB 0.6s
+#7 sha256:cabaa82ef032dc31156ff734a522a97ab0ba09c4773cb3374a5bb1e4c9d551a1 18.87MB / 52.27MB 1.1s
+#7 sha256:6ed38533225ab96284d0a7bda3e8b9e3b639358f247e1171c8730331834d0a85 8.39MB / 16.05MB 0.9s
+#7 sha256:cabaa82ef032dc31156ff734a522a97ab0ba09c4773cb3374a5bb1e4c9d551a1 23.07MB / 52.27MB 1.2s
+#7 sha256:6ed38533225ab96284d0a7bda3e8b9e3b639358f247e1171c8730331834d0a85 10.49MB / 16.05MB 1.1s
+#7 sha256:e4be80ccf23625c2b9f55507e92a0bef3343c6a3f274f9d593c52bd4d2fa2945 4.19MB / 27.68MB 0.9s
+#7 sha256:6ed38533225ab96284d0a7bda3e8b9e3b639358f247e1171c8730331834d0a85 16.05MB / 16.05MB 1.3s done
+#7 sha256:cabaa82ef032dc31156ff734a522a97ab0ba09c4773cb3374a5bb1e4c9d551a1 28.31MB / 52.27MB 1.4s
+#7 sha256:e4be80ccf23625c2b9f55507e92a0bef3343c6a3f274f9d593c52bd4d2fa2945 7.34MB / 27.68MB 1.2s
+#7 sha256:cabaa82ef032dc31156ff734a522a97ab0ba09c4773cb3374a5bb1e4c9d551a1 32.51MB / 52.27MB 1.5s
+#7 sha256:cabaa82ef032dc31156ff734a522a97ab0ba09c4773cb3374a5bb1e4c9d551a1 38.80MB / 52.27MB 1.7s
+#7 sha256:e4be80ccf23625c2b9f55507e92a0bef3343c6a3f274f9d593c52bd4d2fa2945 9.44MB / 27.68MB 1.5s
+#7 sha256:cabaa82ef032dc31156ff734a522a97ab0ba09c4773cb3374a5bb1e4c9d551a1 44.04MB / 52.27MB 1.8s
+#7 sha256:cabaa82ef032dc31156ff734a522a97ab0ba09c4773cb3374a5bb1e4c9d551a1 49.28MB / 52.27MB 2.0s
+#7 sha256:e4be80ccf23625c2b9f55507e92a0bef3343c6a3f274f9d593c52bd4d2fa2945 11.53MB / 27.68MB 1.8s
+#7 sha256:cabaa82ef032dc31156ff734a522a97ab0ba09c4773cb3374a5bb1e4c9d551a1 52.27MB / 52.27MB 2.1s done
+#7 sha256:e4be80ccf23625c2b9f55507e92a0bef3343c6a3f274f9d593c52bd4d2fa2945 14.68MB / 27.68MB 2.1s
+#7 sha256:e4be80ccf23625c2b9f55507e92a0bef3343c6a3f274f9d593c52bd4d2fa2945 16.78MB / 27.68MB 2.4s
+#7 sha256:e4be80ccf23625c2b9f55507e92a0bef3343c6a3f274f9d593c52bd4d2fa2945 18.87MB / 27.68MB 2.6s
+#7 sha256:e4be80ccf23625c2b9f55507e92a0bef3343c6a3f274f9d593c52bd4d2fa2945 22.02MB / 27.68MB 2.9s
+#7 sha256:e4be80ccf23625c2b9f55507e92a0bef3343c6a3f274f9d593c52bd4d2fa2945 27.68MB / 27.68MB 3.3s done
+#7 extracting sha256:e4be80ccf23625c2b9f55507e92a0bef3343c6a3f274f9d593c52bd4d2fa2945
+#7 extracting sha256:e4be80ccf23625c2b9f55507e92a0bef3343c6a3f274f9d593c52bd4d2fa2945 0.4s done
+#7 extracting sha256:6ed38533225ab96284d0a7bda3e8b9e3b639358f247e1171c8730331834d0a85
+#7 extracting sha256:6ed38533225ab96284d0a7bda3e8b9e3b639358f247e1171c8730331834d0a85 0.3s done
+#7 extracting sha256:cabaa82ef032dc31156ff734a522a97ab0ba09c4773cb3374a5bb1e4c9d551a1
+#7 extracting sha256:cabaa82ef032dc31156ff734a522a97ab0ba09c4773cb3374a5bb1e4c9d551a1 0.5s done
+#7 extracting sha256:10fd64a46cc5957d6a6565949ad86d420d365b0ff7947ce02eaa405af8f1cf01 done
+#7 extracting sha256:e68382b26852af621b179e9c17bc9394838df450be8a15eb81512097d192f082 done
+#7 DONE 4.7s
+
+#8 [stage-1 2/4] WORKDIR /app
+#8 DONE 0.3s
+
+#6 [builder 1/7] FROM docker.io/library/clojure:temurin-21-jammy@sha256:a29b491698a945543f0337128153cb7a0a3806fe26dc0ab198882962c73b9d30
+#6 sha256:62398dc4f5ed9255b72cbfc127d297bf5fd17fb9a05348df42ce7768d255f798 398B / 398B 0.3s done
+#6 sha256:a183623a1b9f5f9544bc31c61d02f8b02bdece553303f0bcab48d0efb6c5bcad 614B / 614B 0.3s done
+#6 sha256:e2d229cba98fa90b8aeae1c19c23773aeac0991b7c61865876a41a7453666465 2.46kB / 2.46kB 0.3s done
+#6 sha256:32cc06e7ac358abb0a30227d38873a4a9a9e3557aafabdd1b688737b77f2de87 50.14MB / 50.14MB 1.6s done
+#6 sha256:e52f572e197b1b7aec63c64ab7b3e5a485be956b2c7a136558ed8bc1b5101b0a 160B / 160B 0.4s done
+#6 sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 4.19MB / 156.41MB 3.3s
+#6 sha256:a7581a152f8161d87fd33013a8ee935ef0ffdc158e6e3c85b9cd84622544793b 22.08MB / 22.08MB 1.2s done
+#6 extracting sha256:a7581a152f8161d87fd33013a8ee935ef0ffdc158e6e3c85b9cd84622544793b 0.4s done
+#6 sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 12.58MB / 156.41MB 5.4s
+#6 sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 22.02MB / 156.41MB 6.5s
+#6 sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 31.46MB / 156.41MB 7.2s
+#6 sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 40.89MB / 156.41MB 7.7s
+#6 sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 49.28MB / 156.41MB 8.0s
+#6 sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 61.87MB / 156.41MB 8.4s
+#6 sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 72.35MB / 156.41MB 8.7s
+#6 sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 84.93MB / 156.41MB 9.0s
+#6 sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 98.57MB / 156.41MB 9.3s
+#6 sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 106.95MB / 156.41MB 9.5s
+#6 sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 121.63MB / 156.41MB 9.8s
+#6 sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 131.07MB / 156.41MB 9.9s
+#6 sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 141.56MB / 156.41MB 10.1s
+#6 sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 156.41MB / 156.41MB 10.3s done
+#6 extracting sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55
+#6 extracting sha256:4f7be4b9afdbf87877dd80dad0f1d641f9f7407e9fd57401914500d68a7d6f55 0.9s done
+#6 DONE 13.0s
+
+#6 [builder 1/7] FROM docker.io/library/clojure:temurin-21-jammy@sha256:a29b491698a945543f0337128153cb7a0a3806fe26dc0ab198882962c73b9d30
+#6 extracting sha256:e52f572e197b1b7aec63c64ab7b3e5a485be956b2c7a136558ed8bc1b5101b0a done
+#6 extracting sha256:e2d229cba98fa90b8aeae1c19c23773aeac0991b7c61865876a41a7453666465 done
+#6 extracting sha256:4f4fb700ef54461cfa02571ae0db9a0dc1e0cdb5577484a6d75e68dc38e8acc1 done
+#6 extracting sha256:32cc06e7ac358abb0a30227d38873a4a9a9e3557aafabdd1b688737b77f2de87
+#6 extracting sha256:32cc06e7ac358abb0a30227d38873a4a9a9e3557aafabdd1b688737b77f2de87 0.6s done
+#6 DONE 13.6s
+
+#6 [builder 1/7] FROM docker.io/library/clojure:temurin-21-jammy@sha256:a29b491698a945543f0337128153cb7a0a3806fe26dc0ab198882962c73b9d30
+#6 extracting sha256:a183623a1b9f5f9544bc31c61d02f8b02bdece553303f0bcab48d0efb6c5bcad done
+#6 extracting sha256:62398dc4f5ed9255b72cbfc127d297bf5fd17fb9a05348df42ce7768d255f798 done
+#6 DONE 13.6s
+
+#9 [builder 2/7] WORKDIR /app
+#9 DONE 0.2s
+
+#10 [builder 3/7] COPY deps.edn .
+#10 DONE 0.0s
+
+#11 [builder 4/7] COPY build.clj .
+#11 DONE 0.0s
+
+#12 [builder 5/7] COPY src/ src/
+#12 DONE 0.0s
+
+#13 [builder 6/7] COPY resources/ resources/
+#13 DONE 0.0s
+
+#14 [builder 7/7] RUN clojure -T:build uber
+#14 0.851 Downloading: io/github/clojure/tools.build/0.10.3/tools.build-0.10.3.pom from central
+#14 0.922 Downloading: org/slf4j/slf4j-nop/1.7.36/slf4j-nop-1.7.36.pom from central
+#14 0.970 Downloading: org/slf4j/slf4j-parent/1.7.36/slf4j-parent-1.7.36.pom from central
+#14 0.994 Downloading: org/clojure/tools.namespace/1.5.0/tools.namespace-1.5.0.pom from central
+#14 1.031 Downloading: org/clojure/tools.deps/0.19.1411/tools.deps-0.19.1411.pom from central
+#14 1.190 Downloading: org/apache/maven/resolver/maven-resolver-api/1.8.2/maven-resolver-api-1.8.2.pom from central
+#14 1.193 Downloading: org/clojure/data.xml/0.2.0-alpha9/data.xml-0.2.0-alpha9.pom from central
+#14 1.203 Downloading: org/apache/maven/maven-core/3.8.8/maven-core-3.8.8.pom from central
+#14 1.203 Downloading: org/apache/maven/resolver/maven-resolver-util/1.8.2/maven-resolver-util-1.8.2.pom from central
+#14 1.203 Downloading: org/apache/maven/resolver/maven-resolver-spi/1.8.2/maven-resolver-spi-1.8.2.pom from central
+#14 1.233 Downloading: org/eclipse/jetty/jetty-http/9.4.53.v20231009/jetty-http-9.4.53.v20231009.pom from central
+#14 1.233 Downloading: javax/inject/javax.inject/1/javax.inject-1.pom from central
+#14 1.236 Downloading: org/clojure/tools.cli/1.1.230/tools.cli-1.1.230.pom from central
+#14 1.241 Downloading: org/apache/maven/maven-resolver-provider/3.8.8/maven-resolver-provider-3.8.8.pom from central
+#14 1.241 Downloading: org/eclipse/jetty/jetty-client/9.4.53.v20231009/jetty-client-9.4.53.v20231009.pom from central
+#14 1.245 Downloading: org/apache/maven/resolver/maven-resolver-transport-file/1.8.2/maven-resolver-transport-file-1.8.2.pom from central
+#14 1.248 Downloading: org/apache/maven/resolver/maven-resolver-impl/1.8.2/maven-resolver-impl-1.8.2.pom from central
+#14 1.249 Downloading: org/clojure/java.classpath/1.1.0/java.classpath-1.1.0.pom from central
+#14 1.260 Downloading: com/cognitect/aws/endpoints/1.1.12.626/endpoints-1.1.12.626.pom from central
+#14 1.265 Downloading: org/apache/maven/resolver/maven-resolver-connector-basic/1.8.2/maven-resolver-connector-basic-1.8.2.pom from central
+#14 1.271 Downloading: org/apache/maven/resolver/maven-resolver-transport-http/1.8.2/maven-resolver-transport-http-1.8.2.pom from central
+#14 1.277 Downloading: org/clojure/tools.gitlibs/2.5.197/tools.gitlibs-2.5.197.pom from central
+#14 1.280 Downloading: org/eclipse/jetty/jetty-project/9.4.53.v20231009/jetty-project-9.4.53.v20231009.pom from central
+#14 1.280 Downloading: com/cognitect/aws/api/0.8.686/api-0.8.686.pom from central
+#14 1.282 Downloading: org/apache/maven/resolver/maven-resolver/1.8.2/maven-resolver-1.8.2.pom from central
+#14 1.283 Downloading: com/cognitect/aws/s3/848.2.1413.0/s3-848.2.1413.0.pom from central
+#14 1.290 Downloading: org/clojure/tools.reader/1.4.0/tools.reader-1.4.0.pom from central
+#14 1.293 Downloading: org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.pom from central
+#14 1.299 Downloading: org/apache/maven/maven/3.8.8/maven-3.8.8.pom from central
+#14 1.327 Downloading: org/clojure/pom.contrib/1.1.0/pom.contrib-1.1.0.pom from central
+#14 1.362 Downloading: org/apache/maven/maven-parent/35/maven-parent-35.pom from central
+#14 1.372 Downloading: org/junit/junit-bom/5.9.1/junit-bom-5.9.1.pom from central
+#14 1.387 Downloading: org/apache/maven/maven-parent/36/maven-parent-36.pom from central
+#14 1.424 Downloading: org/apache/apache/25/apache-25.pom from central
+#14 1.434 Downloading: org/testcontainers/testcontainers-bom/1.16.1/testcontainers-bom-1.16.1.pom from central
+#14 1.438 Downloading: org/apache/apache/26/apache-26.pom from central
+#14 1.499 Downloading: org/apache/httpcomponents/httpcore/4.4.15/httpcore-4.4.15.pom from central
+#14 1.499 Downloading: org/slf4j/jcl-over-slf4j/1.7.36/jcl-over-slf4j-1.7.36.pom from central
+#14 1.501 Downloading: org/infinispan/infinispan-bom/11.0.17.Final/infinispan-bom-11.0.17.Final.pom from central
+#14 1.503 Downloading: javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.pom from central
+#14 1.503 Downloading: org/apache/maven/maven-artifact/3.8.8/maven-artifact-3.8.8.pom from central
+#14 1.503 Downloading: org/apache/httpcomponents/httpclient/4.5.13/httpclient-4.5.13.pom from central
+#14 1.505 Downloading: org/codehaus/plexus/plexus-utils/3.3.1/plexus-utils-3.3.1.pom from central
+#14 1.507 Downloading: org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.pom from central
+#14 1.550 Downloading: org/apache/maven/maven-repository-metadata/3.8.8/maven-repository-metadata-3.8.8.pom from central
+#14 1.550 Downloading: org/apache/maven/maven-model/3.8.8/maven-model-3.8.8.pom from central
+#14 1.552 Downloading: org/apache/maven/maven-builder-support/3.8.8/maven-builder-support-3.8.8.pom from central
+#14 1.552 Downloading: org/apache/maven/maven-settings/3.8.8/maven-settings-3.8.8.pom from central
+#14 1.552 Downloading: org/infinispan/infinispan-build-configuration-parent/11.0.17.Final/infinispan-build-configuration-parent-11.0.17.Final.pom from central
+#14 1.552 Downloading: org/apache/maven/maven-settings-builder/3.8.8/maven-settings-builder-3.8.8.pom from central
+#14 1.553 Downloading: org/apache/maven/resolver/maven-resolver-named-locks/1.8.2/maven-resolver-named-locks-1.8.2.pom from central
+#14 1.556 Downloading: org/apache/httpcomponents/httpcomponents-client/4.5.13/httpcomponents-client-4.5.13.pom from central
+#14 1.556 Downloading: org/apache/httpcomponents/httpcomponents-core/4.4.15/httpcomponents-core-4.4.15.pom from central
+#14 1.557 Downloading: org/apache/maven/maven-model-builder/3.8.8/maven-model-builder-3.8.8.pom from central
+#14 1.557 Downloading: org/codehaus/plexus/plexus/5.1/plexus-5.1.pom from central
+#14 1.558 Downloading: net/java/jvnet-parent/3/jvnet-parent-3.pom from central
+#14 1.634 Downloading: org/apache/maven/maven-plugin-api/3.8.8/maven-plugin-api-3.8.8.pom from central
+#14 1.634 Downloading: org/apache/commons/commons-parent/52/commons-parent-52.pom from central
+#14 1.674 Downloading: org/jboss/jboss-parent/36/jboss-parent-36.pom from central
+#14 1.674 Downloading: org/clojure/data.json/2.4.0/data.json-2.4.0.pom from central
+#14 1.676 Downloading: org/apache/maven/shared/maven-shared-utils/3.3.4/maven-shared-utils-3.3.4.pom from central
+#14 1.676 Downloading: org/eclipse/sisu/org.eclipse.sisu.plexus/0.3.5/org.eclipse.sisu.plexus-0.3.5.pom from central
+#14 1.680 Downloading: org/codehaus/plexus/plexus-component-annotations/2.1.0/plexus-component-annotations-2.1.0.pom from central
+#14 1.684 Downloading: org/apache/apache/23/apache-23.pom from central
+#14 1.684 Downloading: org/codehaus/plexus/plexus-classworlds/2.6.0/plexus-classworlds-2.6.0.pom from central
+#14 1.686 Downloading: org/clojure/tools.logging/1.2.4/tools.logging-1.2.4.pom from central
+#14 1.692 Downloading: org/apache/httpcomponents/httpcomponents-parent/11/httpcomponents-parent-11.pom from central
+#14 1.692 Downloading: com/google/inject/guice/4.2.2/guice-4.2.2.pom from central
+#14 1.714 Downloading: com/cognitect/http-client/1.0.125/http-client-1.0.125.pom from central
+#14 1.721 Downloading: org/eclipse/sisu/sisu-plexus/0.3.5/sisu-plexus-0.3.5.pom from central
+#14 1.726 Downloading: org/eclipse/jetty/jetty-io/9.4.53.v20231009/jetty-io-9.4.53.v20231009.pom from central
+#14 1.726 Downloading: org/eclipse/sisu/org.eclipse.sisu.inject/0.3.5/org.eclipse.sisu.inject-0.3.5.pom from central
+#14 1.732 Downloading: org/apache/maven/shared/maven-shared-components/34/maven-shared-components-34.pom from central
+#14 1.732 Downloading: org/clojure/core.async/1.6.673/core.async-1.6.673.pom from central
+#14 1.734 Downloading: org/eclipse/jetty/jetty-util/9.4.53.v20231009/jetty-util-9.4.53.v20231009.pom from central
+#14 1.734 Downloading: org/codehaus/plexus/plexus-containers/2.1.0/plexus-containers-2.1.0.pom from central
+#14 1.737 Downloading: org/junit/junit-bom/5.7.1/junit-bom-5.7.1.pom from central
+#14 1.737 Downloading: org/codehaus/plexus/plexus-interpolation/1.26/plexus-interpolation-1.26.pom from central
+#14 1.741 Downloading: com/google/inject/guice-parent/4.2.2/guice-parent-4.2.2.pom from central
+#14 1.748 Downloading: org/apache/apache/21/apache-21.pom from central
+#14 1.773 Downloading: org/sonatype/oss/oss-parent/9/oss-parent-9.pom from central
+#14 1.793 Downloading: org/apache/maven/maven-parent/34/maven-parent-34.pom from central
+#14 1.796 Downloading: com/google/google/5/google-5.pom from central
+#14 1.798 Downloading: commons-codec/commons-codec/1.11/commons-codec-1.11.pom from central
+#14 1.806 Downloading: org/codehaus/plexus/plexus-sec-dispatcher/2.0/plexus-sec-dispatcher-2.0.pom from central
+#14 1.831 Downloading: org/eclipse/sisu/sisu-inject/0.3.5/sisu-inject-0.3.5.pom from central
+#14 1.847 Downloading: org/apache/commons/commons-parent/42/commons-parent-42.pom from central
+#14 1.856 Downloading: org/codehaus/plexus/plexus/8/plexus-8.pom from central
+#14 1.876 Downloading: aopalliance/aopalliance/1.0/aopalliance-1.0.pom from central
+#14 1.888 Downloading: org/clojure/tools.analyzer.jvm/1.2.2/tools.analyzer.jvm-1.2.2.pom from central
+#14 1.913 Downloading: org/apache/apache/18/apache-18.pom from central
+#14 1.959 Downloading: org/codehaus/plexus/plexus-utils/3.4.1/plexus-utils-3.4.1.pom from central
+#14 1.963 Downloading: org/codehaus/plexus/plexus-cipher/2.0/plexus-cipher-2.0.pom from central
+#14 1.965 Downloading: org/clojure/core.memoize/1.0.253/core.memoize-1.0.253.pom from central
+#14 1.968 Downloading: org/ow2/asm/asm/9.2/asm-9.2.pom from central
+#14 1.972 Downloading: org/clojure/tools.analyzer/1.1.0/tools.analyzer-1.1.0.pom from central
+#14 2.018 Downloading: org/ow2/ow2/1.5/ow2-1.5.pom from central
+#14 2.027 Downloading: org/clojure/core.cache/1.0.225/core.cache-1.0.225.pom from central
+#14 2.079 Downloading: org/clojure/data.priority-map/1.1.0/data.priority-map-1.1.0.pom from central
+#14 2.159 Downloading: org/clojure/tools.logging/1.2.4/tools.logging-1.2.4.jar from central
+#14 2.160 Downloading: org/clojure/tools.cli/1.1.230/tools.cli-1.1.230.jar from central
+#14 2.172 Downloading: com/cognitect/aws/api/0.8.686/api-0.8.686.jar from central
+#14 2.173 Downloading: com/cognitect/aws/endpoints/1.1.12.626/endpoints-1.1.12.626.jar from central
+#14 2.204 Downloading: org/eclipse/jetty/jetty-util/9.4.53.v20231009/jetty-util-9.4.53.v20231009.jar from central
+#14 2.204 Downloading: org/slf4j/jcl-over-slf4j/1.7.36/jcl-over-slf4j-1.7.36.jar from central
+#14 2.208 Downloading: org/codehaus/plexus/plexus-cipher/2.0/plexus-cipher-2.0.jar from central
+#14 2.208 Downloading: org/apache/maven/maven-model-builder/3.8.8/maven-model-builder-3.8.8.jar from central
+#14 2.208 Downloading: commons-codec/commons-codec/1.11/commons-codec-1.11.jar from central
+#14 2.208 Downloading: org/clojure/data.json/2.4.0/data.json-2.4.0.jar from central
+#14 2.208 Downloading: org/clojure/tools.analyzer.jvm/1.2.2/tools.analyzer.jvm-1.2.2.jar from central
+#14 2.208 Downloading: org/clojure/tools.analyzer/1.1.0/tools.analyzer-1.1.0.jar from central
+#14 2.208 Downloading: org/eclipse/jetty/jetty-http/9.4.53.v20231009/jetty-http-9.4.53.v20231009.jar from central
+#14 2.208 Downloading: org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.jar from central
+#14 2.208 Downloading: javax/inject/javax.inject/1/javax.inject-1.jar from central
+#14 2.210 Downloading: org/codehaus/plexus/plexus-component-annotations/2.1.0/plexus-component-annotations-2.1.0.jar from central
+#14 2.211 Downloading: org/apache/maven/resolver/maven-resolver-transport-file/1.8.2/maven-resolver-transport-file-1.8.2.jar from central
+#14 2.213 Downloading: javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.jar from central
+#14 2.229 Downloading: org/apache/maven/maven-settings-builder/3.8.8/maven-settings-builder-3.8.8.jar from central
+#14 2.232 Downloading: org/apache/maven/resolver/maven-resolver-transport-http/1.8.2/maven-resolver-transport-http-1.8.2.jar from central
+#14 2.254 Downloading: org/codehaus/plexus/plexus-utils/3.4.1/plexus-utils-3.4.1.jar from central
+#14 2.257 Downloading: org/apache/httpcomponents/httpcore/4.4.15/httpcore-4.4.15.jar from central
+#14 2.260 Downloading: org/codehaus/plexus/plexus-sec-dispatcher/2.0/plexus-sec-dispatcher-2.0.jar from central
+#14 2.261 Downloading: org/eclipse/sisu/org.eclipse.sisu.plexus/0.3.5/org.eclipse.sisu.plexus-0.3.5.jar from central
+#14 2.269 Downloading: org/ow2/asm/asm/9.2/asm-9.2.jar from central
+#14 2.280 Downloading: org/clojure/tools.namespace/1.5.0/tools.namespace-1.5.0.jar from central
+#14 2.285 Downloading: org/apache/maven/shared/maven-shared-utils/3.3.4/maven-shared-utils-3.3.4.jar from central
+#14 2.293 Downloading: com/cognitect/http-client/1.0.125/http-client-1.0.125.jar from central
+#14 2.297 Downloading: org/apache/maven/maven-core/3.8.8/maven-core-3.8.8.jar from central
+#14 2.300 Downloading: org/apache/maven/resolver/maven-resolver-api/1.8.2/maven-resolver-api-1.8.2.jar from central
+#14 2.306 Downloading: org/apache/maven/maven-settings/3.8.8/maven-settings-3.8.8.jar from central
+#14 2.306 Downloading: org/apache/maven/resolver/maven-resolver-spi/1.8.2/maven-resolver-spi-1.8.2.jar from central
+#14 2.314 Downloading: org/apache/maven/maven-resolver-provider/3.8.8/maven-resolver-provider-3.8.8.jar from central
+#14 2.314 Downloading: org/slf4j/slf4j-nop/1.7.36/slf4j-nop-1.7.36.jar from central
+#14 2.325 Downloading: org/clojure/java.classpath/1.1.0/java.classpath-1.1.0.jar from central
+#14 2.333 Downloading: org/codehaus/plexus/plexus-classworlds/2.6.0/plexus-classworlds-2.6.0.jar from central
+#14 2.345 Downloading: org/eclipse/jetty/jetty-client/9.4.53.v20231009/jetty-client-9.4.53.v20231009.jar from central
+#14 2.346 Downloading: org/apache/httpcomponents/httpclient/4.5.13/httpclient-4.5.13.jar from central
+#14 2.350 Downloading: org/clojure/data.xml/0.2.0-alpha9/data.xml-0.2.0-alpha9.jar from central
+#14 2.354 Downloading: com/google/inject/guice/4.2.2/guice-4.2.2-no_aop.jar from central
+#14 2.354 Downloading: org/clojure/tools.reader/1.4.0/tools.reader-1.4.0.jar from central
+#14 2.360 Downloading: org/eclipse/jetty/jetty-io/9.4.53.v20231009/jetty-io-9.4.53.v20231009.jar from central
+#14 2.374 Downloading: org/apache/maven/resolver/maven-resolver-impl/1.8.2/maven-resolver-impl-1.8.2.jar from central
+#14 2.378 Downloading: org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar from central
+#14 2.378 Downloading: org/apache/maven/maven-model/3.8.8/maven-model-3.8.8.jar from central
+#14 2.378 Downloading: org/eclipse/sisu/org.eclipse.sisu.inject/0.3.5/org.eclipse.sisu.inject-0.3.5.jar from central
+#14 2.382 Downloading: org/codehaus/plexus/plexus-interpolation/1.26/plexus-interpolation-1.26.jar from central
+#14 2.386 Downloading: org/clojure/tools.deps/0.19.1411/tools.deps-0.19.1411.jar from central
+#14 2.395 Downloading: org/clojure/tools.gitlibs/2.5.197/tools.gitlibs-2.5.197.jar from central
+#14 2.397 Downloading: org/clojure/core.memoize/1.0.253/core.memoize-1.0.253.jar from central
+#14 2.403 Downloading: org/apache/maven/resolver/maven-resolver-connector-basic/1.8.2/maven-resolver-connector-basic-1.8.2.jar from central
+#14 2.412 Downloading: com/cognitect/aws/s3/848.2.1413.0/s3-848.2.1413.0.jar from central
+#14 2.426 Downloading: org/apache/maven/resolver/maven-resolver-util/1.8.2/maven-resolver-util-1.8.2.jar from central
+#14 2.427 Downloading: org/apache/maven/resolver/maven-resolver-named-locks/1.8.2/maven-resolver-named-locks-1.8.2.jar from central
+#14 2.430 Downloading: aopalliance/aopalliance/1.0/aopalliance-1.0.jar from central
+#14 2.430 Downloading: org/clojure/data.priority-map/1.1.0/data.priority-map-1.1.0.jar from central
+#14 2.433 Downloading: io/github/clojure/tools.build/0.10.3/tools.build-0.10.3.jar from central
+#14 2.439 Downloading: org/clojure/core.cache/1.0.225/core.cache-1.0.225.jar from central
+#14 2.442 Downloading: org/apache/maven/maven-builder-support/3.8.8/maven-builder-support-3.8.8.jar from central
+#14 2.452 Downloading: org/apache/maven/maven-repository-metadata/3.8.8/maven-repository-metadata-3.8.8.jar from central
+#14 2.486 Downloading: org/apache/maven/maven-artifact/3.8.8/maven-artifact-3.8.8.jar from central
+#14 2.491 Downloading: org/apache/maven/maven-plugin-api/3.8.8/maven-plugin-api-3.8.8.jar from central
+#14 2.491 Downloading: org/clojure/core.async/1.6.673/core.async-1.6.673.jar from central
+#14 3.745 Downloading: org/xerial/sqlite-jdbc/3.46.0.0/sqlite-jdbc-3.46.0.0.pom from central
+#14 3.745 Downloading: org/clojure/tools.cli/0.4.2/tools.cli-0.4.2.pom from central
+#14 3.745 Downloading: com/microsoft/sqlserver/mssql-jdbc/12.6.1.jre11/mssql-jdbc-12.6.1.jre11.pom from central
+#14 3.745 Downloading: org/clojure/tools.logging/1.3.0/tools.logging-1.3.0.pom from central
+#14 3.745 Downloading: com/microsoft/azure/msal4j/1.14.1/msal4j-1.14.1.pom from central
+#14 3.745 Downloading: com/azure/azure-identity/1.11.1/azure-identity-1.11.1.pom from central
+#14 3.745 Downloading: org/clojure/data.json/2.5.0/data.json-2.5.0.pom from central
+#14 3.749 Downloading: org/postgresql/postgresql/42.7.3/postgresql-42.7.3.pom from central
+#14 3.749 Downloading: org/clojure/clojure/1.12.0/clojure-1.12.0.pom from central
+#14 3.749 Downloading: com/mysql/mysql-connector-j/9.0.0/mysql-connector-j-9.0.0.pom from central
+#14 3.749 Downloading: com/github/albfernandez/javadbf/1.13.1/javadbf-1.13.1.pom from central
+#14 3.749 Downloading: com/opencsv/opencsv/5.9/opencsv-5.9.pom from central
+#14 3.840 Downloading: com/azure/azure-client-sdk-parent/1.7.0/azure-client-sdk-parent-1.7.0.pom from central
+#14 3.840 Downloading: org/clojure/pom.contrib/0.2.2/pom.contrib-0.2.2.pom from central
+#14 3.892 Downloading: ch/qos/logback/logback-classic/1.5.6/logback-classic-1.5.6.pom from central
+#14 3.901 Downloading: com/azure/azure-sdk-parent/1.6.0/azure-sdk-parent-1.6.0.pom from central
+#14 3.981 Downloading: ch/qos/logback/logback-parent/1.5.6/logback-parent-1.5.6.pom from central
+#14 4.259 Downloading: instaparse/instaparse/1.4.12/instaparse-1.4.12.pom from clojars
+#14 4.259 Downloading: com/github/clj-easy/graal-build-time/1.0.5/graal-build-time-1.0.5.pom from clojars
+#14 4.261 Downloading: com/layerware/hugsql-core/0.5.3/hugsql-core-0.5.3.pom from clojars
+#14 4.277 Downloading: com/layerware/hugsql-adapter-next-jdbc/0.5.3/hugsql-adapter-next-jdbc-0.5.3.pom from clojars
+#14 4.341 Downloading: com/github/seancorfield/honeysql/2.6.1147/honeysql-2.6.1147.pom from clojars
+#14 4.544 Downloading: com/github/seancorfield/next.jdbc/1.3.939/next.jdbc-1.3.939.pom from clojars
+#14 4.562 Downloading: org/checkerframework/checker-qual/3.42.0/checker-qual-3.42.0.pom from central
+#14 4.562 Downloading: org/clojure/tools.reader/1.3.6/tools.reader-1.3.6.pom from central
+#14 4.624 Downloading: net/java/dev/jna/jna-platform/5.6.0/jna-platform-5.6.0.pom from central
+#14 4.650 Downloading: com/microsoft/azure/msal4j-persistence-extension/1.2.0/msal4j-persistence-extension-1.2.0.pom from central
+#14 4.673 Downloading: com/azure/azure-core/1.45.1/azure-core-1.45.1.pom from central
+#14 4.674 Downloading: com/azure/azure-core-http-netty/1.13.11/azure-core-http-netty-1.13.11.pom from central
+#14 4.823 Downloading: org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.pom from central
+#14 4.829 Downloading: commons-beanutils/commons-beanutils/1.9.4/commons-beanutils-1.9.4.pom from central
+#14 4.829 Downloading: org/apache/commons/commons-collections4/4.4/commons-collections4-4.4.pom from central
+#14 4.831 Downloading: com/fasterxml/jackson/core/jackson-databind/2.13.4.2/jackson-databind-2.13.4.2.pom from central
+#14 4.831 Downloading: org/apache/commons/commons-text/1.11.0/commons-text-1.11.0.pom from central
+#14 4.831 Downloading: net/minidev/json-smart/2.4.10/json-smart-2.4.10.pom from central
+#14 4.835 Downloading: org/apache/commons/commons-lang3/3.13.0/commons-lang3-3.13.0.pom from central
+#14 4.857 Downloading: ch/qos/logback/logback-core/1.5.6/logback-core-1.5.6.pom from central
+#14 4.865 Downloading: com/google/protobuf/protobuf-java/4.26.1/protobuf-java-4.26.1.pom from central
+#14 4.867 Downloading: org/clojure/java.data/1.2.107/java.data-1.2.107.pom from central
+#14 4.868 Downloading: org/slf4j/slf4j-parent/2.0.13/slf4j-parent-2.0.13.pom from central
+#14 4.874 Downloading: org/apache/commons/commons-parent/47/commons-parent-47.pom from central
+#14 4.874 Downloading: org/apache/commons/commons-parent/48/commons-parent-48.pom from central
+#14 4.879 Downloading: com/nimbusds/oauth2-oidc-sdk/10.7.1/oauth2-oidc-sdk-10.7.1.pom from central
+#14 4.879 Downloading: org/apache/commons/commons-parent/64/commons-parent-64.pom from central
+#14 4.887 Downloading: com/fasterxml/jackson/jackson-base/2.13.4/jackson-base-2.13.4.pom from central
+#14 4.887 Downloading: org/apache/commons/commons-parent/58/commons-parent-58.pom from central
+#14 4.909 Downloading: org/slf4j/slf4j-bom/2.0.13/slf4j-bom-2.0.13.pom from central
+#14 4.927 Downloading: net/minidev/json-smart/maven-metadata.xml from central
+#14 4.929 Downloading: org/apache/apache/30/apache-30.pom from central
+#14 4.930 Downloading: com/fasterxml/jackson/jackson-bom/2.13.4/jackson-bom-2.13.4.pom from central
+#14 4.930 Downloading: org/apache/apache/19/apache-19.pom from central
+#14 4.935 Downloading: org/apache/apache/29/apache-29.pom from central
+#14 4.947 Downloading: com/google/protobuf/protobuf-parent/4.26.1/protobuf-parent-4.26.1.pom from central
+#14 4.974 Downloading: org/junit/junit-bom/5.10.0/junit-bom-5.10.0.pom from central
+#14 4.979 Downloading: com/fasterxml/jackson/jackson-parent/2.13/jackson-parent-2.13.pom from central
+#14 4.984 Downloading: org/junit/junit-bom/5.9.3/junit-bom-5.9.3.pom from central
+#14 4.984 Downloading: com/layerware/hugsql-adapter/0.5.3/hugsql-adapter-0.5.3.pom from clojars
+#14 5.025 Downloading: com/fasterxml/oss-parent/43/oss-parent-43.pom from central
+#14 5.047 Downloading: com/google/protobuf/protobuf-bom/4.26.1/protobuf-bom-4.26.1.pom from central
+#14 5.077 Downloading: camel-snake-kebab/camel-snake-kebab/0.4.3/camel-snake-kebab-0.4.3.pom from clojars
+#14 5.359 Downloading: com/fasterxml/jackson/core/jackson-databind/2.13.5/jackson-databind-2.13.5.pom from central
+#14 5.360 Downloading: com/fasterxml/jackson/core/jackson-annotations/2.13.5/jackson-annotations-2.13.5.pom from central
+#14 5.361 Downloading: io/netty/netty-handler/4.1.101.Final/netty-handler-4.1.101.Final.pom from central
+#14 5.363 Downloading: com/fasterxml/jackson/core/jackson-core/2.13.5/jackson-core-2.13.5.pom from central
+#14 5.369 Downloading: io/netty/netty-handler-proxy/4.1.101.Final/netty-handler-proxy-4.1.101.Final.pom from central
+#14 5.385 Downloading: io/netty/netty-transport-native-kqueue/4.1.101.Final/netty-transport-native-kqueue-4.1.101.Final.pom from central
+#14 5.389 Downloading: io/netty/netty-codec/4.1.101.Final/netty-codec-4.1.101.Final.pom from central
+#14 5.391 Downloading: io/projectreactor/netty/reactor-netty-http/1.0.39/reactor-netty-http-1.0.39.pom from central
+#14 5.394 Downloading: com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.13.5/jackson-datatype-jsr310-2.13.5.pom from central
+#14 5.396 Downloading: io/netty/netty-transport-native-epoll/4.1.101.Final/netty-transport-native-epoll-4.1.101.Final.pom from central
+#14 5.399 Downloading: io/netty/netty-codec-http2/4.1.101.Final/netty-codec-http2-4.1.101.Final.pom from central
+#14 5.399 Downloading: io/netty/netty-tcnative-boringssl-static/2.0.62.Final/netty-tcnative-boringssl-static-2.0.62.Final.pom from central
+#14 5.403 Downloading: com/azure/azure-json/1.1.0/azure-json-1.1.0.pom from central
+#14 5.403 Downloading: io/netty/netty-common/4.1.101.Final/netty-common-4.1.101.Final.pom from central
+#14 5.404 Downloading: net/java/dev/jna/jna/5.13.0/jna-5.13.0.pom from central
+#14 5.407 Downloading: io/projectreactor/reactor-core/3.4.34/reactor-core-3.4.34.pom from central
+#14 5.410 Downloading: io/netty/netty-buffer/4.1.101.Final/netty-buffer-4.1.101.Final.pom from central
+#14 5.412 Downloading: io/netty/netty-codec-http/4.1.101.Final/netty-codec-http-4.1.101.Final.pom from central
+#14 5.415 Downloading: io/netty/netty-transport-native-unix-common/4.1.101.Final/netty-transport-native-unix-common-4.1.101.Final.pom from central
+#14 5.421 Downloading: com/fasterxml/jackson/jackson-base/2.13.5/jackson-base-2.13.5.pom from central
+#14 5.437 Downloading: net/java/dev/jna/jna-platform/5.13.0/jna-platform-5.13.0.pom from central
+#14 5.443 Downloading: com/fasterxml/jackson/module/jackson-modules-java8/2.13.5/jackson-modules-java8-2.13.5.pom from central
+#14 5.448 Downloading: commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.pom from central
+#14 5.450 Downloading: io/netty/netty-parent/4.1.101.Final/netty-parent-4.1.101.Final.pom from central
+#14 5.455 Downloading: com/nimbusds/content-type/2.2/content-type-2.2.pom from central
+#14 5.457 Downloading: com/github/stephenc/jcip/jcip-annotations/1.0-1/jcip-annotations-1.0-1.pom from central
+#14 5.471 Downloading: com/fasterxml/jackson/jackson-bom/2.13.5/jackson-bom-2.13.5.pom from central
+#14 5.473 Downloading: commons-logging/commons-logging/1.2/commons-logging-1.2.pom from central
+#14 5.493 Downloading: org/apache/commons/commons-parent/39/commons-parent-39.pom from central
+#14 5.500 Downloading: com/nimbusds/lang-tag/1.7/lang-tag-1.7.pom from central
+#14 5.506 Downloading: org/sonatype/oss/oss-parent/7/oss-parent-7.pom from central
+#14 5.527 Downloading: net/minidev/accessors-smart/2.4.9/accessors-smart-2.4.9.pom from central
+#14 5.533 Downloading: org/reactivestreams/reactive-streams/1.0.4/reactive-streams-1.0.4.pom from central
+#14 5.533 Downloading: org/apache/commons/commons-parent/34/commons-parent-34.pom from central
+#14 5.548 Downloading: com/nimbusds/nimbus-jose-jwt/9.30.2/nimbus-jose-jwt-9.30.2.pom from central
+#14 5.555 Downloading: org/apache/apache/16/apache-16.pom from central
+#14 5.562 Downloading: io/netty/netty-transport/4.1.101.Final/netty-transport-4.1.101.Final.pom from central
+#14 5.571 Downloading: io/netty/netty-resolver/4.1.101.Final/netty-resolver-4.1.101.Final.pom from central
+#14 5.574 Downloading: io/netty/netty-transport-classes-epoll/4.1.101.Final/netty-transport-classes-epoll-4.1.101.Final.pom from central
+#14 5.584 Downloading: org/apache/apache/13/apache-13.pom from central
+#14 5.584 Downloading: io/netty/netty-codec-socks/4.1.101.Final/netty-codec-socks-4.1.101.Final.pom from central
+#14 5.594 Downloading: io/netty/netty-tcnative-classes/2.0.62.Final/netty-tcnative-classes-2.0.62.Final.pom from central
+#14 5.605 Downloading: io/netty/netty-transport-classes-kqueue/4.1.101.Final/netty-transport-classes-kqueue-4.1.101.Final.pom from central
+#14 5.616 Downloading: io/netty/netty-resolver-dns-native-macos/4.1.101.Final/netty-resolver-dns-native-macos-4.1.101.Final.pom from central
+#14 5.616 Downloading: io/netty/netty-resolver-dns/4.1.101.Final/netty-resolver-dns-4.1.101.Final.pom from central
+#14 5.629 Downloading: org/ow2/asm/asm/9.3/asm-9.3.pom from central
+#14 5.643 Downloading: io/projectreactor/netty/reactor-netty-core/1.0.39/reactor-netty-core-1.0.39.pom from central
+#14 5.669 Downloading: io/netty/netty-tcnative-parent/2.0.62.Final/netty-tcnative-parent-2.0.62.Final.pom from central
+#14 5.830 Downloading: io/netty/netty-resolver-dns-classes-macos/4.1.101.Final/netty-resolver-dns-classes-macos-4.1.101.Final.pom from central
+#14 5.830 Downloading: io/netty/netty-codec-dns/4.1.101.Final/netty-codec-dns-4.1.101.Final.pom from central
+#14 5.889 Downloading: org/apache/commons/commons-lang3/3.13.0/commons-lang3-3.13.0.jar from central
+#14 5.889 Downloading: org/clojure/clojure/1.12.0/clojure-1.12.0.jar from central
+#14 5.889 Downloading: com/microsoft/sqlserver/mssql-jdbc/12.6.1.jre11/mssql-jdbc-12.6.1.jre11.jar from central
+#14 5.891 Downloading: com/fasterxml/jackson/core/jackson-databind/2.13.5/jackson-databind-2.13.5.jar from central
+#14 5.918 Downloading: io/netty/netty-common/4.1.101.Final/netty-common-4.1.101.Final.jar from central
+#14 5.920 Downloading: io/netty/netty-tcnative-boringssl-static/2.0.62.Final/netty-tcnative-boringssl-static-2.0.62.Final-linux-x86_64.jar from central
+#14 5.920 Downloading: io/projectreactor/netty/reactor-netty-core/1.0.39/reactor-netty-core-1.0.39.jar from central
+#14 5.926 Downloading: io/netty/netty-codec-http2/4.1.101.Final/netty-codec-http2-4.1.101.Final.jar from central
+#14 5.927 Downloading: org/clojure/tools.logging/1.3.0/tools.logging-1.3.0.jar from central
+#14 5.927 Downloading: org/clojure/tools.cli/0.4.2/tools.cli-0.4.2.jar from central
+#14 5.927 Downloading: io/projectreactor/netty/reactor-netty-http/1.0.39/reactor-netty-http-1.0.39.jar from central
+#14 5.930 Downloading: org/clojure/data.json/2.5.0/data.json-2.5.0.jar from central
+#14 5.930 Downloading: io/netty/netty-handler-proxy/4.1.101.Final/netty-handler-proxy-4.1.101.Final.jar from central
+#14 5.933 Downloading: io/netty/netty-transport-native-kqueue/4.1.101.Final/netty-transport-native-kqueue-4.1.101.Final-osx-x86_64.jar from central
+#14 5.982 Downloading: com/nimbusds/content-type/2.2/content-type-2.2.jar from central
+#14 6.011 Downloading: io/netty/netty-codec/4.1.101.Final/netty-codec-4.1.101.Final.jar from central
+#14 6.018 Downloading: com/microsoft/azure/msal4j-persistence-extension/1.2.0/msal4j-persistence-extension-1.2.0.jar from central
+#14 6.026 Downloading: io/netty/netty-transport-classes-epoll/4.1.101.Final/netty-transport-classes-epoll-4.1.101.Final.jar from central
+#14 6.069 Downloading: io/netty/netty-codec-socks/4.1.101.Final/netty-codec-socks-4.1.101.Final.jar from central
+#14 6.074 Downloading: com/nimbusds/oauth2-oidc-sdk/10.7.1/oauth2-oidc-sdk-10.7.1.jar from central
+#14 6.121 Downloading: org/postgresql/postgresql/42.7.3/postgresql-42.7.3.jar from central
+#14 6.129 Downloading: io/netty/netty-handler/4.1.101.Final/netty-handler-4.1.101.Final.jar from central
+#14 6.129 Downloading: com/fasterxml/jackson/core/jackson-core/2.13.5/jackson-core-2.13.5.jar from central
+#14 6.134 Downloading: io/netty/netty-buffer/4.1.101.Final/netty-buffer-4.1.101.Final.jar from central
+#14 6.134 Downloading: ch/qos/logback/logback-core/1.5.6/logback-core-1.5.6.jar from central
+#14 6.135 Downloading: org/ow2/asm/asm/9.3/asm-9.3.jar from central
+#14 6.159 Downloading: commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar from central
+#14 6.173 Downloading: com/nimbusds/nimbus-jose-jwt/9.30.2/nimbus-jose-jwt-9.30.2.jar from central
+#14 6.180 Downloading: io/netty/netty-tcnative-boringssl-static/2.0.62.Final/netty-tcnative-boringssl-static-2.0.62.Final.jar from central
+#14 6.187 Downloading: com/fasterxml/jackson/core/jackson-annotations/2.13.5/jackson-annotations-2.13.5.jar from central
+#14 6.191 Downloading: commons-logging/commons-logging/1.2/commons-logging-1.2.jar from central
+#14 6.191 Downloading: org/apache/commons/commons-text/1.11.0/commons-text-1.11.0.jar from central
+#14 6.217 Downloading: io/netty/netty-tcnative-classes/2.0.62.Final/netty-tcnative-classes-2.0.62.Final.jar from central
+#14 6.230 Downloading: io/netty/netty-transport-native-epoll/4.1.101.Final/netty-transport-native-epoll-4.1.101.Final-linux-x86_64.jar from central
+#14 6.239 Downloading: net/minidev/json-smart/2.4.10/json-smart-2.4.10.jar from central
+#14 6.241 Downloading: commons-beanutils/commons-beanutils/1.9.4/commons-beanutils-1.9.4.jar from central
+#14 6.245 Downloading: com/github/clj-easy/graal-build-time/1.0.5/graal-build-time-1.0.5.jar from clojars
+#14 6.273 Downloading: com/nimbusds/lang-tag/1.7/lang-tag-1.7.jar from central
+#14 6.273 Downloading: io/netty/netty-tcnative-boringssl-static/2.0.62.Final/netty-tcnative-boringssl-static-2.0.62.Final-osx-x86_64.jar from central
+#14 6.284 Downloading: io/netty/netty-resolver-dns-classes-macos/4.1.101.Final/netty-resolver-dns-classes-macos-4.1.101.Final.jar from central
+#14 6.354 Downloading: com/azure/azure-identity/1.11.1/azure-identity-1.11.1.jar from central
+#14 6.356 Downloading: io/netty/netty-transport/4.1.101.Final/netty-transport-4.1.101.Final.jar from central
+#14 6.356 Downloading: io/netty/netty-transport-native-unix-common/4.1.101.Final/netty-transport-native-unix-common-4.1.101.Final.jar from central
+#14 6.357 Downloading: io/netty/netty-codec-dns/4.1.101.Final/netty-codec-dns-4.1.101.Final.jar from central
+#14 6.359 Downloading: com/layerware/hugsql-core/0.5.3/hugsql-core-0.5.3.jar from clojars
+#14 6.359 Downloading: com/opencsv/opencsv/5.9/opencsv-5.9.jar from central
+#14 6.360 Downloading: io/netty/netty-codec-http/4.1.101.Final/netty-codec-http-4.1.101.Final.jar from central
+#14 6.368 Downloading: com/layerware/hugsql-adapter/0.5.3/hugsql-adapter-0.5.3.jar from clojars
+#14 6.399 Downloading: net/java/dev/jna/jna/5.13.0/jna-5.13.0.jar from central
+#14 6.402 Downloading: org/checkerframework/checker-qual/3.42.0/checker-qual-3.42.0.jar from central
+#14 6.407 Downloading: org/clojure/tools.reader/1.3.6/tools.reader-1.3.6.jar from central
+#14 6.410 Downloading: org/reactivestreams/reactive-streams/1.0.4/reactive-streams-1.0.4.jar from central
+#14 6.418 Downloading: com/mysql/mysql-connector-j/9.0.0/mysql-connector-j-9.0.0.jar from central
+#14 6.444 Downloading: io/netty/netty-resolver-dns-native-macos/4.1.101.Final/netty-resolver-dns-native-macos-4.1.101.Final-osx-x86_64.jar from central
+#14 6.448 Downloading: com/microsoft/azure/msal4j/1.14.1/msal4j-1.14.1.jar from central
+#14 6.471 Downloading: net/java/dev/jna/jna-platform/5.13.0/jna-platform-5.13.0.jar from central
+#14 6.483 Downloading: com/azure/azure-core/1.45.1/azure-core-1.45.1.jar from central
+#14 6.487 Downloading: com/github/albfernandez/javadbf/1.13.1/javadbf-1.13.1.jar from central
+#14 6.498 Downloading: org/apache/commons/commons-collections4/4.4/commons-collections4-4.4.jar from central
+#14 6.533 Downloading: io/netty/netty-resolver/4.1.101.Final/netty-resolver-4.1.101.Final.jar from central
+#14 6.533 Downloading: com/github/seancorfield/honeysql/2.6.1147/honeysql-2.6.1147.jar from clojars
+#14 6.534 Downloading: org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar from central
+#14 6.548 Downloading: com/azure/azure-json/1.1.0/azure-json-1.1.0.jar from central
+#14 6.552 Downloading: org/xerial/sqlite-jdbc/3.46.0.0/sqlite-jdbc-3.46.0.0.jar from central
+#14 6.567 Downloading: io/netty/netty-tcnative-boringssl-static/2.0.62.Final/netty-tcnative-boringssl-static-2.0.62.Final-osx-aarch_64.jar from central
+#14 6.590 Downloading: io/projectreactor/reactor-core/3.4.34/reactor-core-3.4.34.jar from central
+#14 6.594 Downloading: io/netty/netty-resolver-dns/4.1.101.Final/netty-resolver-dns-4.1.101.Final.jar from central
+#14 6.604 Downloading: net/minidev/accessors-smart/2.4.9/accessors-smart-2.4.9.jar from central
+#14 6.613 Downloading: com/azure/azure-core-http-netty/1.13.11/azure-core-http-netty-1.13.11.jar from central
+#14 6.615 Downloading: com/google/protobuf/protobuf-java/4.26.1/protobuf-java-4.26.1.jar from central
+#14 6.626 Downloading: io/netty/netty-transport-classes-kqueue/4.1.101.Final/netty-transport-classes-kqueue-4.1.101.Final.jar from central
+#14 6.636 Downloading: ch/qos/logback/logback-classic/1.5.6/logback-classic-1.5.6.jar from central
+#14 6.644 Downloading: camel-snake-kebab/camel-snake-kebab/0.4.3/camel-snake-kebab-0.4.3.jar from clojars
+#14 6.658 Downloading: org/clojure/java.data/1.2.107/java.data-1.2.107.jar from central
+#14 6.662 Downloading: com/github/stephenc/jcip/jcip-annotations/1.0-1/jcip-annotations-1.0-1.jar from central
+#14 6.695 Downloading: com/github/seancorfield/next.jdbc/1.3.939/next.jdbc-1.3.939.jar from clojars
+#14 6.699 Downloading: com/layerware/hugsql-adapter-next-jdbc/0.5.3/hugsql-adapter-next-jdbc-0.5.3.jar from clojars
+#14 6.704 Downloading: instaparse/instaparse/1.4.12/instaparse-1.4.12.jar from clojars
+#14 6.714 Downloading: com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.13.5/jackson-datatype-jsr310-2.13.5.jar from central
+#14 6.718 Downloading: io/netty/netty-tcnative-boringssl-static/2.0.62.Final/netty-tcnative-boringssl-static-2.0.62.Final-windows-x86_64.jar from central
+#14 7.108 Downloading: io/netty/netty-tcnative-boringssl-static/2.0.62.Final/netty-tcnative-boringssl-static-2.0.62.Final-linux-aarch_64.jar from central
+#14 8.407 18:34:24,930 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version 1.5.6
+#14 8.407 18:34:24,930 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2b6262bc - No custom configurators were discovered as a service.
+#14 8.407 18:34:24,930 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2b6262bc - Trying to configure with ch.qos.logback.classic.joran.SerializedModelConfigurator
+#14 8.407 18:34:24,930 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2b6262bc - Constructed configurator of type class ch.qos.logback.classic.joran.SerializedModelConfigurator
+#14 8.407 18:34:24,932 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.scmo]
+#14 8.407 18:34:24,932 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.scmo]
+#14 8.407 18:34:24,934 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2b6262bc - ch.qos.logback.classic.joran.SerializedModelConfigurator.configure() call lasted 2 milliseconds. ExecutionStatus=INVOKE_NEXT_IF_ANY
+#14 8.407 18:34:24,934 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2b6262bc - Trying to configure with ch.qos.logback.classic.util.DefaultJoranConfigurator
+#14 8.407 18:34:24,935 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2b6262bc - Constructed configurator of type class ch.qos.logback.classic.util.DefaultJoranConfigurator
+#14 8.407 18:34:24,935 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
+#14 8.407 18:34:24,936 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Found resource [logback.xml] at [file:/app/target/classes/logback.xml]
+#14 8.407 18:34:24,936 |-WARN in ch.qos.logback.classic.util.DefaultJoranConfigurator@5cffec7 - Resource [logback.xml] occurs multiple times on the classpath.
+#14 8.407 18:34:24,936 |-WARN in ch.qos.logback.classic.util.DefaultJoranConfigurator@5cffec7 - Resource [logback.xml] occurs at [file:/app/resources/logback.xml]
+#14 8.407 18:34:24,936 |-WARN in ch.qos.logback.classic.util.DefaultJoranConfigurator@5cffec7 - Resource [logback.xml] occurs at [file:/app/target/classes/logback.xml]
+#14 8.407 18:34:24,972 |-INFO in ch.qos.logback.classic.model.processor.ConfigurationModelHandlerFull - Registering a new ReconfigureOnChangeTask ReconfigureOnChangeTask(born:1790879664971)
+#14 8.407 18:34:24,972 |-INFO in ch.qos.logback.classic.model.processor.ConfigurationModelHandlerFull - Will scan for changes in [file:/app/target/classes/logback.xml] 
+#14 8.407 18:34:24,972 |-INFO in ch.qos.logback.classic.model.processor.ConfigurationModelHandlerFull - Setting ReconfigureOnChangeTask scanning period to 30 seconds
+#14 8.407 18:34:24,976 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [CONSOLE]
+#14 8.407 18:34:24,976 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.ConsoleAppender]
+#14 8.407 18:34:24,979 |-INFO in ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+#14 8.407 18:34:24,985 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [FILE]
+#14 8.407 18:34:24,985 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.rolling.RollingFileAppender]
+#14 8.407 18:34:24,987 |-INFO in c.q.l.core.rolling.TimeBasedRollingPolicy@2122408314 - No compression will be used
+#14 8.407 18:34:24,987 |-INFO in c.q.l.core.rolling.TimeBasedRollingPolicy@2122408314 - Will use the pattern /tmp/pgloader/pgloader.%d{yyyy-MM-dd}.log for the active file
+#14 8.407 18:34:24,994 |-INFO in c.q.l.core.rolling.DefaultTimeBasedFileNamingAndTriggeringPolicy - The date pattern is 'yyyy-MM-dd' from file name pattern '/tmp/pgloader/pgloader.%d{yyyy-MM-dd}.log'.
+#14 8.407 18:34:24,994 |-INFO in c.q.l.core.rolling.DefaultTimeBasedFileNamingAndTriggeringPolicy - Roll-over at midnight.
+#14 8.407 18:34:24,995 |-INFO in c.q.l.core.rolling.DefaultTimeBasedFileNamingAndTriggeringPolicy - Setting initial period to 2026-10-01T18:34:24.995Z
+#14 8.407 18:34:24,995 |-INFO in ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+#14 8.407 18:34:24,996 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[FILE] - Active log file name: /tmp/pgloader/pgloader.log
+#14 8.407 18:34:24,996 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[FILE] - File property is set to [/tmp/pgloader/pgloader.log]
+#14 8.407 18:34:24,997 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [com.azure.identity] to WARN
+#14 8.407 18:34:24,997 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [com.microsoft.aad.msal4j] to ERROR
+#14 8.407 18:34:24,997 |-INFO in ch.qos.logback.classic.model.processor.RootLoggerModelHandler - Setting level of ROOT logger to INFO
+#14 8.407 18:34:24,997 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [CONSOLE] to Logger[ROOT]
+#14 8.407 18:34:24,997 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [FILE] to Logger[ROOT]
+#14 8.407 18:34:24,997 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@6e73974 - End of configuration.
+#14 8.407 18:34:24,997 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@3e28dc96 - Registering current configuration as safe fallback point
+#14 8.407 18:34:24,997 |-INFO in ch.qos.logback.classic.util.ContextInitializer@2b6262bc - ch.qos.logback.classic.util.DefaultJoranConfigurator.configure() call lasted 62 milliseconds. ExecutionStatus=DO_NOT_INVOKE_NEXT_IF_ANY
+#14 8.407 
+#14 8.744 Reflection warning, pgloader/source/sqlite.clj:59:40 - call to method indexOf on java.lang.String can't be resolved (argument types: java.lang.Object).
+#14 9.416 Reflection warning, pgloader/core.clj:833:53 - reference to field commit can't be resolved.
+#14 9.416 Reflection warning, pgloader/core.clj:835:55 - reference to field rollback can't be resolved.
+#14 9.417 Reflection warning, pgloader/core.clj:833:53 - reference to field commit can't be resolved.
+#14 9.417 Reflection warning, pgloader/core.clj:835:55 - reference to field rollback can't be resolved.
+#14 9.418 Reflection warning, pgloader/core.clj:855:59 - reference to field commit can't be resolved.
+#14 9.418 Reflection warning, pgloader/core.clj:857:61 - reference to field rollback can't be resolved.
+#14 9.419 Reflection warning, pgloader/core.clj:877:100 - reference to field commit can't be resolved.
+#14 9.419 Reflection warning, pgloader/core.clj:878:119 - reference to field rollback can't be resolved.
+#14 9.419 Reflection warning, pgloader/core.clj:877:100 - reference to field commit can't be resolved.
+#14 9.419 Reflection warning, pgloader/core.clj:878:119 - reference to field rollback can't be resolved.
+#14 9.420 Reflection warning, pgloader/core.clj:882:98 - reference to field commit can't be resolved.
+#14 9.420 Reflection warning, pgloader/core.clj:883:117 - reference to field rollback can't be resolved.
+#14 9.420 Reflection warning, pgloader/core.clj:891:102 - reference to field commit can't be resolved.
+#14 9.420 Reflection warning, pgloader/core.clj:892:121 - reference to field rollback can't be resolved.
+#14 9.422 Reflection warning, pgloader/core.clj:943:63 - reference to field commit can't be resolved.
+#14 9.422 Reflection warning, pgloader/core.clj:945:65 - reference to field rollback can't be resolved.
+#14 16.28 Symlinked target/pgloader.jar -> pgloader-v4-4.0.0-SNAPSHOT.jar
+#14 DONE 16.4s
+
+#15 [stage-1 3/4] COPY --from=builder /app/target/pgloader.jar /app/pgloader.jar
+#15 DONE 0.0s
+
+#16 [stage-1 4/4] RUN groupadd --system pgloader   && useradd --system --gid pgloader pgloader   && mkdir -p /tmp/pgloader   && chown -R pgloader:pgloader /app   && chown -R pgloader:pgloader /tmp/pgloader
+#16 DONE 0.1s
+
+#17 exporting to image
+#17 exporting layers
+#17 exporting layers 0.9s done
+#17 exporting manifest sha256:5a2d5fc2cff37f38860e3836bef4d84728d3f87a8616a02a318677c54880a49a done
+#17 exporting config sha256:266388d22c4f42c442586cc6aec1c1b3fa7d2c200157975f7a1e93c0a9a60c89 done
+#17 exporting attestation manifest sha256:601279028c6cbfe3b5c9ac1fdaa4261af689b514316eb2ba1279a08500178c18 done
+#17 exporting manifest list sha256:c0d9e27a869deb46df9f94c2487dfb01e60a6fbf41785ef844d13655cd4375e9 done
+#17 naming to docker.io/library/my2pg-reference-v4:231ab867 done
+#17 unpacking to docker.io/library/my2pg-reference-v4:231ab867
+#17 unpacking to docker.io/library/my2pg-reference-v4:231ab867 0.3s done
+#17 DONE 1.3s

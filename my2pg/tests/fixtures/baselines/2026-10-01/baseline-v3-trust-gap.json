@@ -1,0 +1,33 @@
+{
+  "upstream_revision": "231ab86778ca5ffd7de40878714760c8b4860cdf",
+  "loader": "v3",
+  "image_id": "sha256:70dd9fef34e3263377be2ae8f527339deb0fab02c3d87b1523654ac91e7584c2",
+  "architecture": "arm64",
+  "source_target": {
+    "mysql": "8.4.11",
+    "postgres": "16.15"
+  },
+  "fixture_sha256": {
+    "mysql.sql": "efbe952f0397182d11caf187cc806b741abd642799a6d7ad8e554c3bf49f7c56",
+    "postgres.sql": "af1413b85316897eb0a81f249713131fddc929f515d21840b44cb835b1c5e504"
+  },
+  "load_sha256": "9b4cc37333ba0d812aa15ddf7bd08647e08ad691bf9c0d4d524fbea93d6cc8df",
+  "exit_code": 1,
+  "elapsed_seconds_informational": 0.6654707919999999,
+  "benchmark": false,
+  "correctness": "not established",
+  "command": [
+    "docker",
+    "run",
+    "--rm",
+    "--label",
+    "org.my2pg.integration=true",
+    "--network",
+    "my2pg-mysql84-pg16-dad0a38e415d_default",
+    "-v",
+    "/Users/renatibragimov/www/pg/my2pg/target/integration/my2pg-mysql84-pg16-dad0a38e415d:/suite:ro",
+    "my2pg-reference-v3:231ab867",
+    "/opt/src/pgloader/build/bin/pgloader",
+    "/suite/baseline-v3.load"
+  ]
+}

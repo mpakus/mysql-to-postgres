@@ -1,0 +1,197 @@
+From: My2pg contributors
+Purpose: expose T21 phase intervals and normalize pgloader-v4 batch-size AST values
+Reference: layerware/pgloader clojure runtime at 231ab86778ca5ffd7de40878714760c8b4860cdf
+License: this patch is independently authored; it copies no upstream code.
+
+diff --git a/src/pgloader/core.clj b/src/pgloader/core.clj
+index c5c7e80..72939b2 100644
+--- a/src/pgloader/core.clj
++++ b/src/pgloader/core.clj
+@@ -466,6 +466,8 @@
+           table-spec  (when table-filter {:table-filter table-filter})
+           _           (when-not (:sub-command? opts) (stats/clear!))
+           run-wall-t0 (System/nanoTime)
++          catalog-phase-t0 (atom nil)
++          phase-intervals (atom [])
+           source      (source-from-uri source-uri table-spec (:with-options cmd) source-overrides (:decoding-as cmd))
+           verbose     (or (:debug opts) (:verbose opts) false)]
+       (log/info "pgloader v4")
+@@ -498,6 +500,7 @@
+               (let [_          (log/debug (str "Connecting to source: " (plog/redact-uri (source-name source))))
+                     _          (log/info (str "Fetching catalog from " (plog/redact-uri (source-name source))))
+                     fetch-t0   (System/nanoTime)
++                    _          (reset! catalog-phase-t0 fetch-t0)
+                     cat        (catalog source)
+                 ;; If MATERIALIZE ALL VIEWS, append view catalog entries to table catalog.
+                 ;; For a named list, views WITHOUT an explicit SQL definition are added
+@@ -797,6 +800,13 @@
+                           (stats/update-entry! :pre "Create tables"
+                                                :rows (count cat)
+                                                :total-nanos (- (System/nanoTime) ddl-phase-start))))
++                      (when-let [phase-t0 @catalog-phase-t0]
++                        (swap! phase-intervals conj
++                               {:kind "phase_interval" :phase "catalog"
++                                :clock "run_monotonic_millis" :scope "run"
++                                :start_elapsed_millis (quot (- phase-t0 run-wall-t0) 1000000)
++                                :end_elapsed_millis (quot (- (System/nanoTime) run-wall-t0) 1000000)
++                                :operation_classes ["source_mysql_catalog" "target_postgresql_schema_table_prepare"]}))
+           ;; Create the index stats entry before Phase 2 so futures can update it.
+                       (when create-indexes?
+                         (stats/new-entry! :post "Create Indexes"))
+@@ -987,7 +997,13 @@
+                           (stats/update-entry! :post "COPY Wall-Clock Time"
+                                                :rows workers
+                                                :bytes (:bytes (stats/get-totals :data))
+-                                               :total-nanos (- (System/nanoTime) copy-wall-t0))))
++                                               :total-nanos (- (System/nanoTime) copy-wall-t0))
++                          (swap! phase-intervals conj
++                                 {:kind "phase_interval" :phase "copy"
++                                  :clock "run_monotonic_millis" :scope "run"
++                                  :start_elapsed_millis (quot (- copy-wall-t0 run-wall-t0) 1000000)
++                                  :end_elapsed_millis (quot (- (System/nanoTime) run-wall-t0) 1000000)
++                                  :operation_classes ["row_copy"]})))
+           ;; Schema-only: no COPY phase ran, so submit all indexes now.
+                       (when (and create-indexes? schema-only? idx-executor)
+                         (when (nil? @idx-wall-t0)
+@@ -1078,6 +1094,13 @@
+                             (stats/update-entry! :post "Create Check Constraints"
+                                                  :rows (count all-checks)
+                                                  :total-nanos (- (System/nanoTime) start)))))
++                      (when-let [phase-t0 @idx-wall-t0]
++                        (swap! phase-intervals conj
++                               {:kind "phase_interval" :phase "index_constraints"
++                                :clock "run_monotonic_millis" :scope "run"
++                                :start_elapsed_millis (quot (- phase-t0 run-wall-t0) 1000000)
++                                :end_elapsed_millis (quot (- (System/nanoTime) run-wall-t0) 1000000)
++                                :operation_classes ["primary_keys" "indexes" "foreign_keys" "check_constraints"]}))
+                       (when (get with-options :reset-sequences false)
+                         (log/info "Resetting sequences")
+                         (stats/new-entry! :post "Reset Sequences")
+@@ -1135,7 +1158,7 @@
+         (let [wall-nanos (- (System/nanoTime) run-wall-t0)]
+           (summary/print-summary verbose wall-nanos)
+           (when-let [summary-path (:summary opts)]
+-            (summary/write-summary summary-path verbose wall-nanos)))))))
++            (summary/write-summary summary-path verbose wall-nanos @phase-intervals)))))))
+ 
+ (defn run-inline
+   [source-uri target-uri opts]
+diff --git a/src/pgloader/load_file/ast.clj b/src/pgloader/load_file/ast.clj
+index 4f9b1ef..6cd74ff 100644
+--- a/src/pgloader/load_file/ast.clj
++++ b/src/pgloader/load_file/ast.clj
+@@ -346,7 +346,11 @@
+         (let [tag (first inner)]
+           (case tag
+             :batch-rows          [tag (Integer/parseInt (second (second inner)))]
+-            :batch-size          [tag (second (second inner))]
++            :batch-size          [tag (let [ds (second inner)
++                                            n  (Long/parseLong (second (second ds)))
++                                            u  (if (> (count ds) 2) (second (nth ds 2)) "B")]
++                                        (str (* n (case u "KB" 1024 "MB" (* 1024 1024)
++                                                        "GB" (* 1024 1024 1024) 1))))]
+             :prefetch-rows       [tag (Integer/parseInt (second (second inner)))]
+             :batch-concurrency   [tag (Integer/parseInt (second (second inner)))]
+             :rows-per-range      [tag (Integer/parseInt (second (second inner)))]
+diff --git a/src/pgloader/summary.clj b/src/pgloader/summary.clj
+index 9289096..bd8eb78 100644
+--- a/src/pgloader/summary.clj
++++ b/src/pgloader/summary.clj
+@@ -129,7 +129,8 @@
+ 
+ (defn write-summary-json
+   ([^String path verbose] (write-summary-json path verbose nil))
+-  ([^String path verbose wall-nanos]
++  ([^String path verbose wall-nanos] (write-summary-json path verbose wall-nanos nil))
++  ([^String path verbose wall-nanos benchmark-phases]
+    (let [data (reduce
+                (fn [acc phase-key]
+                  (let [entries (stats/entries phase-key)]
+@@ -154,14 +155,17 @@
+                :grand-total (-> g
+                                 (assoc :rows (:rows d) :bytes (:bytes d))
+                                 (cond-> wall-nanos (assoc :total-nanos wall-nanos)))}]
+-     (spit path (json/write-str full :key-fn name)))))
++     (spit path (json/write-str (cond-> full
++                                 benchmark-phases (assoc :benchmark_phases benchmark-phases))
++                                :key-fn name)))))
+ 
+ (defn write-summary
+   ([path verbose] (write-summary path verbose nil))
+-  ([path verbose wall-nanos]
++  ([path verbose wall-nanos] (write-summary path verbose wall-nanos nil))
++  ([path verbose wall-nanos benchmark-phases]
+    (when path
+      (cond
+        (str/ends-with? path ".csv")  (write-summary-csv path verbose wall-nanos)
+-       (str/ends-with? path ".json") (write-summary-json path verbose wall-nanos)
++       (str/ends-with? path ".json") (write-summary-json path verbose wall-nanos benchmark-phases)
+        :else                         (write-summary-csv path verbose wall-nanos))
+      (println (str "Summary written to " path)))))
+diff --git a/test/pgloader/load_file/parser_test.clj b/test/pgloader/load_file/parser_test.clj
+index 2704749..6f7f701 100644
+--- a/test/pgloader/load_file/parser_test.clj
++++ b/test/pgloader/load_file/parser_test.clj
+@@ -569,3 +569,22 @@
+                    WITH on error resume next;")]
+       (is (:ok result) (str "Parse failed: " (:error result)))
+       (is (nil? (get-in result [:ok :with-options :on-error-stop]))))))
++
++
++(deftest test-parse-database-batch-size-as-bytes
++  (testing "database batch sizes are converted to bytes for the runtime parser"
++    (let [result (parser/parse-string
++                  "LOAD DATABASE FROM mysql://user@localhost/mydb
++                    INTO postgresql:///target
++                    WITH batch rows = 25000, batch size = 16MB, prefetch rows = 2;")]
++      (is (:ok result))
++      (is (= 25000 (get-in result [:ok :with-options :batch-rows])))
++      (is (= "16777216" (get-in result [:ok :with-options :batch-size])))
++      (is (= 2 (get-in result [:ok :with-options :prefetch-rows])))))
++  (testing "a bare batch size remains a byte count"
++    (let [result (parser/parse-string
++                  "LOAD DATABASE FROM mysql://user@localhost/mydb
++                    INTO postgresql:///target
++                    WITH batch size = 4096;")]
++      (is (:ok result))
++      (is (= "4096" (get-in result [:ok :with-options :batch-size]))))))
+diff --git a/test/pgloader/summary_test.clj b/test/pgloader/summary_test.clj
+index e21897e..ec45108 100644
+--- a/test/pgloader/summary_test.clj
++++ b/test/pgloader/summary_test.clj
+@@ -3,6 +3,7 @@
+             [clojure.string :as str]
+             [pgloader.log :as log]
+             [pgloader.stats :as stats]
++            [clojure.data.json :as json]
+             [pgloader.summary :as summary])
+   (:import [java.io StringWriter]))
+ 
+@@ -120,3 +121,27 @@
+         (summary/print-summary false))
+       (let [output (.toString sw)]
+         (is (str/includes? output "Results:"))))))
++
++
++(deftest test-summary-preserves-overlapping-benchmark-phase-intervals
++  (testing "benchmark intervals are serialized without changing native totals"
++    (stats/clear!)
++    (stats/new-entry! :data "users")
++    (stats/update-entry! :data "users" :rows 2 :bytes 8 :total-nanos 100)
++    (let [file (java.io.File/createTempFile "pgloader-phase-" ".json")
++          intervals [{:kind "phase_interval" :phase "copy"
++                      :clock "run_monotonic_millis" :scope "run"
++                      :start_elapsed_millis 10 :end_elapsed_millis 40
++                      :operation_classes ["row_copy"]}
++                     {:kind "phase_interval" :phase "index_constraints"
++                      :clock "run_monotonic_millis" :scope "run"
++                      :start_elapsed_millis 25 :end_elapsed_millis 50
++                      :operation_classes ["primary_keys" "indexes" "foreign_keys" "check_constraints"]}]]
++      (try
++        (summary/write-summary (.getAbsolutePath file) false 100 intervals)
++        (let [output (json/read-str (slurp file))]
++          (is (= intervals (get output "benchmark_phases")))
++          (is (= 2 (get-in output ["phases" "data" "total" "rows"])))
++          (is (< (get-in (first (get output "benchmark_phases")) ["start_elapsed_millis"])
++                 (get-in (second (get output "benchmark_phases")) ["end_elapsed_millis"]))))
++        (finally (.delete file)))))

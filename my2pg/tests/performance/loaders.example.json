@@ -1,0 +1,55 @@
+{
+  "format": 1,
+  "comparison_contract": {
+    "source": "mysql",
+    "target": "postgresql",
+    "mode": "full",
+    "source_consistency": "frozen",
+    "source_tls": "verify_full",
+    "target_tls": "verify_full",
+    "fresh_target_schema": true,
+    "table_workers": 1,
+    "readers_per_table": 1,
+    "index_workers": 1,
+    "batch_rows": 25000,
+    "batch_bytes": 16777216,
+    "queue_batches": 2,
+    "max_row_bytes": 16777216,
+    "memory_bytes": 536870912,
+    "reset_sequences": true,
+    "row_error_policy": "reject",
+    "durability": "database defaults with fsync enabled",
+    "indexes": "primary key created and validated",
+    "verification": "independent ordered row stream and exact target column/key check after loader wall time"
+  },
+  "loaders": [
+    {
+      "name": "my2pg-release",
+      "identity": {"kind": "local-binary", "build_profile": "release", "revision": "working-tree binary digest recorded by runner"},
+      "settings": {
+        "source": "mysql",
+        "target": "postgresql",
+        "mode": "full",
+        "source_consistency": "frozen",
+        "source_tls": "verify_full",
+        "target_tls": "verify_full",
+        "fresh_target_schema": true,
+        "table_workers": 1,
+        "readers_per_table": 1,
+        "index_workers": 1,
+        "batch_rows": 25000,
+        "batch_bytes": 16777216,
+        "queue_batches": 2,
+        "max_row_bytes": 16777216,
+        "memory_bytes": 536870912,
+        "reset_sequences": true,
+        "row_error_policy": "reject",
+        "durability": "database defaults with fsync enabled",
+        "indexes": "primary key created and validated",
+        "verification": "independent ordered row stream and exact target column/key check after loader wall time"
+      },
+      "argv": ["{my2pg_bin}", "run", "{config_file}"],
+      "config_template": "version = 1\n[source]\nurl_env = \"MY2PG_MYSQL_URL\"\nconsistency = \"frozen\"\ntls_mode = \"verify_full\"\nca_file = \"{source_ca_file}\"\n[target]\nurl_env = \"MY2PG_POSTGRES_URL\"\nschema = \"{target_schema}\"\ntls_mode = \"verify_full\"\nca_file = \"{target_ca_file}\"\non_existing = \"error\"\n[migration]\nmode = \"full\"\ntable_workers = 1\nreaders_per_table = 1\nindex_workers = 1\nbatch_rows = 25000\nbatch_bytes = 16777216\nqueue_batches = 2\nmax_row_bytes = 16777216\nmemory_bytes = 536870912\non_row_error = \"reject\"\nmax_rejected_rows = 12500\nreset_sequences = true\n[tables]\ninclude = {include_tables}\n[verification]\nmode = \"none\"\n[report]\ndirectory = \"{report_dir}\"\nconsole = \"json\"\nprogress = \"never\"\n"
+    }
+  ]
+}

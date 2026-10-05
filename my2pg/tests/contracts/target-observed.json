@@ -1,0 +1,16 @@
+{
+  "oid": 70001,
+  "owner": "fixture_owner",
+  "relation_kind": "r",
+  "access_method": "heap",
+  "persistence": "p",
+  "comment": "known empty table — quoted 'comment' 界",
+  "row_security_enabled": false,
+  "row_security_forced": false,
+  "replica_identity": "d",
+  "columns": [],
+  "index_parts": [],
+  "constraint_parts": [],
+  "sequence_parts": [],
+  "trigger_parts": []
+}

@@ -1,0 +1,64 @@
+[package]
+name = "my2pg"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+description = "MySQL-only schema and data migration to PostgreSQL"
+license = "PostgreSQL"
+include = [
+    "/.dockerignore",
+    "/about.toml",
+    "/bin/check-third-party-notices.sh",
+    "/Dockerfile",
+    "/THIRD-PARTY-NOTICES.md",
+    "/third-party-notices.hbs",
+    "/src/**",
+    "/tests/**",
+    "!/tests/fixtures/baselines/**",
+    "/docs/architecture.md",
+    "/docs/config-and-cli.md",
+    "/docs/scope-and-compatibility.md",
+    "/docs/examples/**",
+    "/README.md",
+    "/LICENSE",
+    "/rust-toolchain.toml",
+]
+
+[features]
+nls-integration = []
+artifact-worker-tests = []
+native-import-tests = []
+
+[[bin]]
+name = "my2pg-artifact-test-worker"
+path = "tests/support/artifact_worker.rs"
+required-features = ["artifact-worker-tests"]
+
+[[test]]
+name = "nls"
+path = "tests/nls.rs"
+required-features = ["nls-integration"]
+
+[dependencies]
+bytes = "1"
+clap = { version = "4", features = ["derive"] }
+futures-util = { version = "0.3", features = ["sink"] }
+mysql_async = { version = "=0.37.1", default-features = false, features = ["minimal-rust", "rustls-tls", "ring", "tls12"] }
+native-tls = "0.2"
+postgres-native-tls = "0.5"
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["arbitrary_precision"] }
+sha2 = "0.10"
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal", "time", "sync", "net", "fs", "process", "io-util"] }
+tokio-postgres = "0.7"
+toml = "0.9"
+url = "2"
+
+[target.'cfg(unix)'.dependencies]
+rustix = { version = "=1.1.5", features = ["termios"] }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

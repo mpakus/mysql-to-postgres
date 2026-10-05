@@ -1,0 +1,19 @@
+# 2026-10-02 — T11 — data-only identity reset behavior
+
+Status: targeted native regression coverage; T11 remains in progress. Ownership: `tests/cases/t11_monotonic_sequences.rs` and this worklog.
+
+## Reference research before implementation
+
+- Project XERJ query: `data-only reset_sequences identity expectation verification`; prefix `project-my2pg`; indexed revision `db28c459a8a3caf45b07e9e72bcbc9fd3194c762`. It located `src/verify/mod.rs:541` (`verify_sequences`), `src/plan/existing.rs:844-896` (existing sequence state and planned lower bound), and the native runner regression. These show that reset verification must include both the pre-run/source minimum and the post-copy destination maximum.
+- Pgloader XERJ query: `sequence setval AUTO_INCREMENT PostgreSQL after copying rows`; prefix `project-pgloader`; pinned revision `231ab86778ca5ffd7de40878714760c8b4860cdf`. It located `clojure/src/pgloader/ddl/common.clj:661-674`, which builds a post-load `setval` from `MAX(id)`, and `clojure/src/pgloader/core.clj:1081-1097`, which executes reset-sequence work after loading. Adjacent expectations are in `clojure/test/pgloader/ddl_test.clj:461-482`.
+- The Pgloader implementation proves the useful ordering and row-maximum case, but its `GREATEST(MAX(id), 1)` behavior can rewind a destination sequence and does not preserve a higher pre-existing sequence. Do not adopt that behavior. `src/postgres/sequences.rs:8-16, 78-87` already defines my2pg's monotonic, fail-closed adjustment, and `src/pipeline/mod.rs:1380-1392` executes sequence steps after data workers and post-load FK DDL.
+- Native test read directly: `tests/cases/t11_monotonic_sequences.rs:301-455`, `real_runner_adjusts_existing_identity_and_preserves_disabled_state`. It covers a data-only append only while target sequence state is already ahead `(150, true)`, then tests preservation with `reset_sequences=false`; no real-run assertion starts from a stale sequence while existing target rows establish the required lower bound.
+- Chosen proof: extend the real MySQL 8.4/PostgreSQL 16 runner case so an existing target row at 99 and sequence state `(1, false)` are followed by a data-only append of source rows 1 and 2. With reset enabled, assert the copied rows remain intact, the sequence becomes `(100, false)`, and the next generated value is exactly 100. Then explicitly reset state again before the existing preservation case. This tests independently visible row contents and next-value behavior.
+
+## Implementation and verification
+
+The existing real-run test now leaves the retained target row at 99, resets the identity to `(1, false)`, and runs the same data-only append. The test independently checks the final rows, catalog sequence state `(100, false)`, and the next generated value `100`, then reestablishes `(1, false)` before the existing `reset_sequences=false` preservation case.
+
+The first native attempt reached the migration but failed in the test probe because `tokio-postgres` cannot encode `String` as the PostgreSQL `regclass` parameter type. The probe now casts through `text`; a fresh owned MySQL 8.4/PostgreSQL 16 pair then passed the exact case: `bin/cargo test --offline --locked --all-features --test integration t11_monotonic_sequences::real_runner_adjusts_existing_identity_and_preserves_disabled_state -- --ignored --exact --nocapture --test-threads=1` — **1/1 passed**. `bin/cargo fmt --all -- --check`, strict all-target/all-feature Clippy, and `git diff --check` passed. This is a focused T11 proof, not full T11 or M2 acceptance.
+
+Coordinator refreshed and read back XERJ after the source, test and task-note changes. The current `project-my2pg` corpus contains 282 files/1,059 passages; all seven live corpus counts match their coverage reports, all expected project passages exactly match current files, and cluster health is green. The updated digest and timestamp are in the external verification report.

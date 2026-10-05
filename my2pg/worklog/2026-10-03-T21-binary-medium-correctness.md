@@ -1,0 +1,33 @@
+# T21 binary medium correctness gate — 2026-10-03
+
+- Status: binary medium correctness gate passed; T21 timing/equivalence acceptance remains open
+- Owner: F (performance), scoped to `tests/performance/` and this worklog
+- Specification: [T21 checklist](../docs/checklists.md#t21), [performance method](../docs/testing-and-performance.md#proving-faster)
+- Working source revision: `db28c459a8a3caf45b07e9e72bcbc9fd3194c762`
+- Dependencies: T17/T19/T20 worklogs reviewed; T21 runner and adapter-fix evidence reviewed
+- Goal: run the predeclared `binary_large_rows` medium correctness-only comparison through both configured loaders, if the bounded isolated fixture is safe. No timing claims.
+
+## Reference research (before test execution)
+
+| Query / prefix | Indexed revision | Original source and adjacent tests | Finding and chosen adaptation |
+| --- | --- | --- | --- |
+| `binary_large_rows medium profile 5000 rows payload generator correctness` / `project-my2pg` | `db28c459a8a3caf45b07e9e72bcbc9fd3194c762` | `tests/performance/corpus.json:48-61`; `tests/performance/runner.py:137-159,238-260`; `tests/performance/test_runner.py:184-220` | Medium is fixed at 5,000 rows × 81,920 payload bytes = 409,600,000 logical payload bytes. It contains NUL/high-bit bytes plus nullable/empty/ordinary VARBINARY states; independent MySQL and PostgreSQL canonical streams check length, MD5 and optional-byte distinctions. Preserve this declared profile and run the existing full gate; do not reduce rows or weaken the oracle. |
+| `benchmark runner loader comparison memory cpu wall time resource cap` / `project-my2pg` | `db28c459a8a3caf45b07e9e72bcbc9fd3194c762` | `tests/performance/loaders.comparison.example.json`; `tests/performance/runner.py:1018-1275`; `tests/performance/test_runner.py:398-620` | Both adapters are run one at a time under declared Docker CPU/memory caps; My2pg uses a bounded 512 MiB budget, pgloader has a 384 MiB JVM heap under its 512 MiB container cap. Correctness-only avoids benchmark iterations and is always timing-ineligible. Run the comparison manifest unchanged with `--correctness-only`; retain artifacts on failure. |
+| `binary blobs performance benchmark mysql binary cast` / `project-pgloader` | `231ab86778ca5ffd7de40878714760c8b4860cdf` | `clojure/src/pgloader/cast.clj:61-72,173-188`; `clojure/test/pgloader/cast_test.clj:110-124,213-225`; `clojure/tests/mysql/mytest/mytest.load:66-67` | `hex-to-bytea` normalizes hex text into PostgreSQL bytea; adjacent tests cover prefixes and registry use. The T21 adapter already applies this CAST only to the synthetic binary columns, verified by previous smoke/small parity runs. Reuse that reviewed adapter path; do not alter the pinned checkout. |
+| `benchmark memory resource limits migration data` / `ref-dmt-rs` | `4e8015f7e841dbdf9df01e953aeb3948dfb3199a` | `docs/benchmarks.md:140-205`, `PERFORMANCE.md:1-160` | Reference stresses declaring the host/container resource envelope and keeping results workload-specific. Its host and database caps differ materially, so no benchmark figures transfer. For this task only use its disclosure principle and the local 512 MiB per-loader contract; no speed measurements. |
+
+## Safety check and execution
+
+- Docker reports 18 CPUs and an 8 GiB VM; the currently running `strangler-*` containers use about 0.5 GiB in aggregate. They are not owned by this task and will not be changed.
+- Required MySQL 8.4/PostgreSQL 16 and pinned pgloader images are already present; `my2pg/target/release/my2pg` exists (9,792,832 bytes).
+- Harness started unique project `my2pg-mysql84-pg16-c4aca805d4a8`; versions were MySQL 8.4.11 and PostgreSQL 16.15 on `arm64`. The source/target resource caps were recorded (MySQL 1 GiB, PostgreSQL 512 MiB), with no other project's containers altered.
+- The pinned comparison manifest ran each loader in a unique named one-shot container with verified 1 CPU, 512 MiB memory and 512 MiB memory+swap caps. pgloader v4 retained its 384 MiB JVM heap cap. Both containers reported `oom_killed=false`.
+- After the run, `./tests/run-integration.sh --stop <connections.json>` returned 0; `docker ps -aq --filter label=com.docker.compose.project=my2pg-mysql84-pg16-c4aca805d4a8` returned no containers. T21 artifacts remain under the ignored `target/integration/` path.
+
+## Verification
+
+- Live command: `rtk run 'python3 my2pg/tests/performance/runner.py my2pg/target/integration/my2pg-mysql84-pg16-c4aca805d4a8/connections.json --workload binary_large_rows --profile medium --correctness-only --loaders my2pg/tests/performance/loaders.comparison.example.json'` — exit 0; report `target/integration/my2pg-mysql84-pg16-c4aca805d4a8/t21/binary_large_rows-medium-688b4f94d5c6/results.json`, SHA-256 `a7e97fc0d09dfb3010436155ea7753b376be8c3cc6d04afbc1a2ac2e7cc647cb`.
+- Result: `completed-correctness-only`, `timing_eligible=false`, 5,000 rows, and 409,648,000 total payload bytes (409,600,000 LONGBLOB bytes plus 48,000 non-NULL optional VARBINARY bytes). Both pgloader v4 (`231ab86778ca5ffd7de40878714760c8b4860cdf`) and the My2pg release image built from `db28c459a8a3caf45b07e9e72bcbc9fd3194c762` exited 0 and passed the independent ordered-content, exact-byte, NULL/empty/non-empty, row-count, columns, primary-key, aggregate and payload-byte gate. No comparison of their recorded process durations is accepted.
+- The report's 1-second Docker-stats samples observed 403,806,617 bytes for the v4 container and 95,242,158 bytes for My2pg; these are sampled container-memory observations, not a guaranteed instantaneous/true peak and not an equivalent-RSS comparison. The direct-child `wait4` measurements were the Docker client processes, so they do not represent either loader's container RSS. v4 phase metrics remain explicitly unsupported; My2pg emitted COPY/finalize/verify markers. Do not treat these observability differences as comparable phase or memory evidence.
+- The existing `unsupported_equivalence` declarations still make `loader_settings_equivalent=false`; normalized phase comparison is also false. The v4 adapter has no declared equivalent for My2pg batch-byte/queue/oversized-row/global-memory controls, reset-sequence/error-cap/reject-durability behavior, or normalized phase metrics. Matching outer Docker caps and passing correctness do not prove those controls equivalent. This run closes only functional medium-profile acceptance, not comparative timing.
+- Database-free validation: `rtk test python3 -m unittest my2pg.tests.performance.test_runner` — 35 passed. No implementation/test source was edited, so bytecode compilation was not repeated. Cleanup verification found no remaining container for this unique project.

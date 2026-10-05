@@ -1,0 +1,16 @@
+2026-10-01T18:37:34.005000Z LOG pgloader version "3.6.10~devel"
+2026-10-01T18:37:34.006000Z LOG Parsing commands from file #P"/suite/baseline-v3.load"
+2026-10-01T18:37:34.168000Z ERROR Connecting to PostgreSQL postgres: SSL verify error: 19 X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN
+2026-10-01T18:37:34.168000Z LOG You may try --no-ssl-cert-verification
+KABOOM!
+DB-CONNECTION-ERROR: Failed to connect to pgsql at "postgres" (port 5432) as user "my2pg": SSL verify error: 19 X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN
+An unhandled error condition has been signalled:
+   Failed to connect to pgsql at "postgres" (port 5432) as user "my2pg": SSL verify error: 19 X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN
+
+
+
+
+What I am doing here?
+
+Failed to connect to pgsql at "postgres" (port 5432) as user "my2pg": SSL verify error: 19 X509_V_ERR_SELF_SIGNED_CERT_IN_CHAIN
+

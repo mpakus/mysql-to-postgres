@@ -1,0 +1,6 @@
+{
+  "version": 1, "kind": "progress", "run_id": "fixture-run", "table": "t_0000000000000001",
+  "range": null, "progress": {"estimated_rows": 2, "quality": "metadata"},
+  "phase": "copy", "elapsed_millis": 125, "committed_rows": 1, "committed_bytes": 2, "rejected_rows": 0,
+  "diagnostic": null
+}

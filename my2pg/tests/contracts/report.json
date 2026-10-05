@@ -1,0 +1,15 @@
+{
+  "version": 1, "run_id": "fixture-run", "plan_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_endpoint_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "target_endpoint_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "status": "complete", "consistency": "frozen",
+  "mode": "full", "tables": [{
+    "id": "t_0000000000000001", "source_name": "CamelCase", "target_schema": "legacy",
+    "target_name": "camel_case", "status": "complete", "rows_read": 2,
+    "committed_rows": 2, "committed_bytes": 4, "copy_elapsed_millis": 125,
+    "rejected_rows": 0, "unresolved_rows": 0,
+    "indeterminate_rows": 0, "transformations": {}
+  }], "diagnostics": [], "exclusions": ["legacy_event"], "failed_steps": [],
+  "verification": {"mode": "counts_and_schema", "status": "complete", "tables_checked": 1,
+    "differences": []}, "elapsed_millis": 1000, "artifact_dir": "runs/fixture-run"
+}

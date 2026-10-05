@@ -1,0 +1,40 @@
+# 2026-10-02 — T23 — dependency notice generation
+
+Status: deterministic notice generation and package/CI checks implemented; legal compatibility and external dataset attribution remain open.
+
+## Reference research before code
+
+- Current project HEAD: `db28c459a8a3caf45b07e9e72bcbc9fd3194c762`; the checkout has unrelated dirty implementation, test, CI, and documentation work. This task owns only new dependency-notice files and the narrow notice step in `.github/workflows/ci.yml`.
+- Read `AGENTS.md`, `docs/reference-coding.md:1-32,80-90`, `docs/agent-tasks.md` ownership and T23, `docs/implementation-plan.md` T23 scope, `docs/checklists.md` release gates, `Cargo.toml`, `Cargo.lock`, `.github/workflows/ci.yml`, `tests/support/test_package.py`, and the current T23 notice/package-boundary worklogs.
+- XERJ query `project-my2pg "third-party dependency notices license metadata Cargo package lockfile T23" -k 8 --full 80` returned the prior T23 generation/package audits, project license decision, source archive boundary and current release checklist. All indexed passages identified source revision `db28c459a8a3caf45b07e9e72bcbc9fd3194c762`; originals were read because the current worktree is dirty.
+- XERJ query `ref "Cargo dependency license notice generation package THIRD-PARTY-NOTICES" -k 8 --full 70` returned license files from `rust-postgres`, `mysql_async`, and `paganel`, but no notice-generation implementation. Follow-up project query `project-my2pg "cargo-about license generator accepted licenses config dependency notice reproducible output" -k 10 --full 100` again found only prior T23 reports and project scope. No reference code is adapted.
+- Read matching originals: prior `worklog/2026-10-02-T23-notice-generation-audit.md` concludes Cargo metadata alone is not a notice bundle; `tests/support/test_package.py` is the existing archive boundary test; `Cargo.toml` has an explicit package include list and no runtime/build dependency for notice tooling; CI pins Rust 1.99.0 and has offline/database jobs.
+- Official cargo-about sources reviewed: README and generated-output/config docs. The tool renders dependency license texts from Cargo's graph, lets the project specify target triples and whether dev/build-only dependencies are included, and errors when license expressions cannot be satisfied by configured SPDX identifiers. It explicitly disclaims legal advice. The official `0.8.4` release exists; no tool is currently installed in this checkout. The selected approach is to pin cargo-about as an isolated release-time/CI tool, not add it to `Cargo.toml` or the runtime graph. The rendered report is evidence for human review, not an approval of compatibility.
+- Ponytail guidance at `/Users/renatibragimov/.claude/skills/ponytail/SKILL.md` requires the smallest solution that works and warns against unnecessary dependencies. A workflow-only pinned tool plus config/template/output and deterministic check is smaller than adding a runtime crate or maintaining a custom license parser.
+- XERJ loopback searches first failed under the sandbox (`PermissionError`); the same exact searches then succeeded with approved local loopback access. No shared index or reference pin was changed.
+
+## Planned adaptation and acceptance
+
+Generate plain-text third-party notices from the locked Cargo package graph for the declared Linux/macOS release target set. Preserve crate names/versions, selected SPDX identifiers, and complete license texts. Add the generated notice to the existing Cargo source-package allowlist, and have CI run a version-pinned generator and compare fresh output byte-for-byte with the checked-in report. Keep release job/package logic outside this slice. Tests must catch missing archive inclusion and stale generated output through the same check CI runs. The accepted-license list is a generation configuration for selecting license text where SPDX expressions offer alternatives; it is not a legal allow/deny policy or a compatibility finding.
+
+The legal compatibility review of each dependency, review of actual distribution graphs/platform-specific binaries, and F1DB attribution if external corpus data is ever redistributed remain unaddressed gates. Do not change the grouped release checklist.
+
+## Implementation and verification
+
+- Added `about.toml`, `third-party-notices.hbs`, `THIRD-PARTY-NOTICES.md`, and `bin/check-third-party-notices.sh`. The configured graph includes all features, development/build/transitive dependencies, and the Linux x86_64/ARM64 and macOS x86_64/ARM64 target triples. The offline, fail-closed run resolved the current graph without a compatibility allow/deny assertion. The generated file is 132 KiB / 3,582 lines and retains crate names/versions and license text.
+- Pinned cargo-about `0.8.4` as a CI-only host tool; no Cargo runtime/build dependency or lockfile entry was added. CI downloads the official x86_64 Linux musl archive and verifies SHA-256 `c7381aa0cdc41fc0ee662cec8daa260da7817ad8ddea04cd4ddad425460adf14` before execution. The same official archive and the local ARM64 macOS archive were downloaded into `/private/tmp`; their measured hashes were `c7381aa0cdc41fc0ee662cec8daa260da7817ad8ddea04cd4ddad425460adf14` and `d5255ead3ac861a11c785bf19d4f70f16e59ac8b9519c312da61213d3d57351d`, respectively. Both reported `cargo-about 0.8.4`.
+- `bin/check-third-party-notices.sh --write` and then `--check` passed with the pinned macOS tool. A second `--write` produced the same notice hash, `d4a1da16a8e055f618653030996feafc2e31fed36cd83c6095209ceaec011c38`. The script fails on a generator version mismatch, unresolved generation, stale output, or missing notice in `cargo package --list`.
+- `bin/cargo package --allow-dirty --locked --offline` passed verification: 212 files, 2.4 MiB (504.1 KiB compressed). Cargo's existing warning about absent homepage/repository/documentation metadata remains.
+- `PYTHONPYCACHEPREFIX=/private/tmp/my2pg-notice-pycache python3 -m unittest tests.support.test_package -v`: 3/3 passed. `sh -n bin/check-third-party-notices.sh`, `git diff --check`, and the notice helper check passed. No full Rust suite was necessary for this documentation/build-tool-only change.
+
+Changed files in this slice: `about.toml`, `third-party-notices.hbs`, `THIRD-PARTY-NOTICES.md`, `bin/check-third-party-notices.sh`, the four added Cargo package include entries in `Cargo.toml`, and the pinned-generator/fetch/check steps in `.github/workflows/ci.yml`. The CI download checksum was independently checked by downloading the same release archive into `/private/tmp`.
+
+## Remaining limits
+
+This generated report is automated collection, not a legal compatibility opinion. A qualified human must review the actual selected dependency licenses, license texts and attributions against distributions. `--offline` avoids mutable remote license lookups; generator documentation says it may fall back when crate archives omit license files, so generated text/attribution still needs human inspection. The dependency graph is intentionally broader than a production executable because it includes dev/build dependencies; confirm the release graph when binaries/containers are defined. Existing fixture notices remain packaged, but F1DB attribution review remains open if those external data files are ever redistributed. Linux runner execution and released binaries/containers were not exercised locally.
+
+## Coordinator verification
+
+- Re-read the generator script, config, output template, and package allowlist. The first default invocation failed because cargo-about 0.8.4 is intentionally not installed on the host PATH; reran with the hash-verified ARM64 macOS release binary in `CARGO_ABOUT` and the pinned workspace Rust toolchain paths in `PATH`, `CARGO_HOME`, and `RUSTUP_HOME`.
+- `./bin/check-third-party-notices.sh --check` — passed with only Cargo's existing missing-homepage/repository/documentation metadata warning.
+- `python3 tests/support/test_package.py` — 3/3 passed; `git diff --check` — passed.

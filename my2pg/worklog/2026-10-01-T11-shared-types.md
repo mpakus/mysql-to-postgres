@@ -1,0 +1,15 @@
+# T11 — shared type signatures
+
+Coordinator registration/verifier lease. D owns `src/types.rs`, planner adoption and native structure tests. RTK/Ponytail guidance applies.
+
+Before verifier changes, XERJ `project-my2pg / normalized_type modifiers` returned the existing verifier and its adjacent alias/precision/timezone tests. `ref-rust-postgres / Type kind schema` returned `postgres-types/src/lib.rs` at pinned `1084ca8f5b5302e161892f2fa40abf71b4060c10`; read original Type::kind/schema and distinct enum/domain/composite/array Kind metadata. Driver type identity is not arbitrary lowercased text. Read D's recorded research, complete finite type parser, case-sensitive identifier decoder and adjacent pure tests, plus existing verifier column/default paths and actual T11/T15 process cases before registration.
+
+Adaptation: use the shared finite signature comparison for actual column types; remove the second verifier alias parser. Typed literal verification uses the same canonical builtin spelling, returning unsupported for unrecognized types. Unknown grammar cannot compare equal through an empty fallback. Precision, timezone and quoted type identity remain significant. Preserve literal-semantic checks and real database column verification; parser success alone is not full structure acceptance.
+
+T11 and T15 cases are registered in the mandatory database lane. Full T11 existing-target metadata/policy work remains open.
+
+## Immediate observed-topology safety contract — research before code
+
+D's existing-target audit identified that PostgreSQL `TRUNCATE ... RESTRICT` still includes inherited descendants unless `ONLY` is specified. Read complete target table/dependency SQL, inspection, pure existing-policy checks and adjacent privilege/dependency fixtures. XERJ `project-my2pg / TARGET_TRUNCATE_DENIED external dependents` returned the current target-policy branches; `project-pgloader / truncate tables` was broad, so original search located and read `src/pgsql/pgsql-create-schema.lisp:300–320` at `231ab86778ca5ffd7de40878714760c8b4860cdf`. Its unqualified topology assumptions do not prove our preservation requirement. Official [PG16 TRUNCATE](https://www.postgresql.org/docs/16/sql-truncate.html) confirms descendant inclusion and the narrower FK meaning of RESTRICT; [pg_inherits](https://www.postgresql.org/docs/16/catalog-pg-inherits.html) records each direct hierarchy edge.
+
+Publish one positive observed `TargetTable.ordinary_standalone` flag, default false for uninspected/older serialized catalogs. True requires actual relkind `r`, not a partition and no parent/child pg_inherits edge. D will block selected existing targets without that proof under every policy, including recreate. This closes destructive and count/COPY hierarchy ambiguity now, while complete existing-structure/sequence metadata remains the next T11 increment. Root owns inspector/shared fixtures and actual CLI sentinel-preservation cases; D owns planner checks/unit fixtures; E rechecks actual topology in recovery to prevent unsafe direct replay.

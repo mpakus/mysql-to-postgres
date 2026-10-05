@@ -1,0 +1,37 @@
+18:36:45.421 INFO  [main] pgloader.cli - Parsing commands from file /suite/baseline-v4.load
+18:36:45.854 INFO  [main] pgloader.core - Connected to PostgreSQL at postgresql://my2pg:****@postgres:5432/target?sslmode=verify-ca&sslrootcert=/suite/tls/ca.pem
+18:36:46.071 INFO  [main] p.source.mysql - MySQL server: 8.4.11 (mysql)
+18:36:46.072 INFO  [main] pgloader.core - pgloader v4
+18:36:46.072 INFO  [main] pgloader.core - Source: mysql://source/
+18:36:46.072 INFO  [main] pgloader.core - Target: postgresql://my2pg:****@postgres:5432/target?sslmode=verify-ca&sslrootcert=/suite/tls/ca.pem
+18:36:46.093 INFO  [main] pgloader.core - Fetching catalog from mysql://source/
+18:36:46.094 INFO  [main] p.source.mysql - Fetching table list from MySQL
+18:36:46.218 INFO  [main] pgloader.core - Found 1 tables/views in source catalog
+18:36:46.229 INFO  [main] pgloader.core - Processing tables in this order: users
+18:36:46.230 INFO  [main] pgloader.core - Preparing target PostgreSQL schema
+18:36:46.242 INFO  [main] pgloader.core - COPY users [1/1]
+18:36:46.306 INFO  [pool-2-thread-1] p.source.mysql - MySQL server: 8.4.11 (mysql)
+18:36:46.353 INFO  [pool-2-thread-1] pgloader.core - COPY users done: 3 rows in 0.010s
+18:36:46.363 INFO  [main] pgloader.core - Waiting for parallel index builds to complete
+18:36:46.387 INFO  [main] pgloader.core - Creating foreign keys
+18:36:46.388 INFO  [main] pgloader.core - Resetting sequences
+18:36:46.391 INFO  [main] pgloader.core - Done copying all tables
+
+Results:
+
+              table name     errors       rows      bytes      total time
+------------------------  ---------  ---------  ---------  --------------
+         fetch meta data          0          1                     0.124s
+          Create Schemas          0          1                     0.010s
+           Create tables          0          1                     0.021s
+------------------------  ---------  ---------  ---------  --------------
+       baseline_v4.users          0          3      197 B          0.010s
+------------------------  ---------  ---------  ---------  --------------
+          Create Indexes          0          1                     0.032s
+    COPY Wall-Clock Time          0          1      197 B          0.099s
+            Primary Keys          0          1                     0.001s
+     Create Foreign Keys          0          0                     0.000s
+         Reset Sequences          0          1                     0.002s
+------------------------  ---------  ---------  ---------  --------------
+       Total import time          ✓          3      197 B          0.536s
+

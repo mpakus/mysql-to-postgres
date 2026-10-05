@@ -1,0 +1,93 @@
+{
+  "format": 1,
+  "seed": 20261002,
+  "source_schema": "source",
+  "table": "t21_integer_rows",
+  "workloads": {
+    "one_large_narrow_integer": {
+      "class": "one large narrow integer table",
+      "table": "t21_integer_rows",
+      "implemented": true,
+      "row_formula": "id=1..N; bucket=MOD(id,1024); measure/payload are seeded modular integers"
+    },
+    "sparse_skewed_unsigned_primary_keys": {
+      "class": "sparse/skewed unsigned primary keys",
+      "table": "t21_integer_rows",
+      "implemented": true,
+      "row_formula": "id=seq*100000 as BIGINT UNSIGNED; 90% of rows have bucket 0"
+    },
+    "several_large_tables": {
+      "class": "several large tables",
+      "tables": ["t21_large_00", "t21_large_01", "t21_large_02", "t21_large_03"],
+      "implemented": true,
+      "row_formula": "each table has N deterministic rows; table index changes the seeded measures"
+    },
+    "many_small_relational_tables": {
+      "class": "many small relational tables",
+      "tables": ["t21_rel_00", "t21_rel_01", "t21_rel_02", "t21_rel_03", "t21_rel_04", "t21_rel_05", "t21_rel_06", "t21_rel_07"],
+      "foreign_key_count": 7,
+      "implemented": true,
+      "row_formula": "N total rows split evenly across eight tables; each table links to its predecessor by nullable parent_id"
+    },
+    "wide_utf8_text_json_decimal": {
+      "class": "wide UTF-8/text/JSON/decimal rows",
+      "table": "t21_wide_rows",
+      "profiles": {
+        "smoke": {"rows": 100},
+        "small": {"rows": 1000},
+        "medium": {"rows": 10000},
+        "large": {"rows": 1000000},
+        "memory": {"rows": 3000000}
+      },
+      "implemented": true,
+      "row_formula": "fixed-seed Unicode label and repeated text, JSON numeric value=id, DECIMAL(30,12) value=id/1000"
+    },
+    "binary_large_rows": {
+      "class": "binary and large rows",
+      "table": "t21_binary_rows",
+      "profiles": {
+        "smoke": {"rows": 100},
+        "small": {"rows": 1000},
+        "medium": {"rows": 5000},
+        "large": {"rows": 15000},
+        "memory": {"rows": 30000}
+      },
+      "implemented": true,
+      "row_formula": "fixed-seed 81920-byte LONGBLOB pattern includes NUL/high-bit bytes; optional VARBINARY cycles through NULL, empty and 16-byte values"
+    },
+    "bad_rows_fixed_rate": {
+      "class": "fixed-rate NUL-in-text bad rows",
+      "table": "t21_bad_rows",
+      "profiles": {
+        "smoke": {"rows": 1000},
+        "small": {"rows": 10000},
+        "medium": {"rows": 50000},
+        "large": {"rows": 100000},
+        "memory": {"rows": 250000}
+      },
+      "rates_percent": [0.1, 1, 5],
+      "implemented": true,
+      "row_formula": "id=1..N; payload contains CHAR(0) at each predeclared 0.1%, 1%, or 5% ID interval"
+    }
+  },
+  "columns": ["id", "bucket", "measure", "payload"],
+  "row_formula": {
+    "id": "1..N",
+    "bucket": "MOD(id, 1024)",
+    "measure": "MOD(id * 48271 + seed, 2147483647)",
+    "payload": "MOD(id * 69621 + seed * 17, 2147483629)"
+  },
+  "profiles": {
+    "smoke": {"rows": 1000, "expected_payload_bytes": 28000},
+    "small": {"rows": 100000, "expected_payload_bytes": 2800000},
+    "medium": {"rows": 1000000, "expected_payload_bytes": 28000000},
+    "large": {"rows": 10000000, "expected_payload_bytes": 280000000},
+    "memory": {"rows": 100000000, "expected_payload_bytes": 2800000000}
+  },
+  "notes": [
+    "The narrow and sparse workloads use one table; the large-table workload uses four tables; the relational workload uses eight linked tables.",
+    "All generated values are deterministic; the sparse-key workload uses unsigned BIGINT keys and the relational case checks seven foreign keys.",
+    "Integer-shaped profiles use 28 canonical payload bytes per row before row/index/page overhead; wide-row logical payload bytes are measured from source and target values.",
+    "The memory profiles exceed the loader memory limit; do not run them without an isolated capacity plan."
+  ]
+}

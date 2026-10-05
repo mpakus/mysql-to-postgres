@@ -1,0 +1,11 @@
+{
+  "server_version": "16.13", "schema_exists": true,
+  "can_create_schema": true, "can_use_schema": true, "can_create_objects": true,
+  "tables": [{"schema": "legacy", "name": "untouched", "columns": [{
+    "name": "id", "data_type": "bigint", "nullable": false, "generated": false, "identity": true
+  }], "row_count": 0, "ordinary_standalone": true, "can_insert": true, "can_select": true, "can_alter": true, "can_truncate": true, "row_security_active": false}],
+  "enums": {"ordered_enum": ["second", "first"]},
+  "extensions": ["plpgsql"], "external_dependencies": ["external_view"],
+  "dependencies": [], "occupied_names": {"untouched": "r"},
+  "occupied_types": ["_ordered_enum", "_untouched", "ordered_enum", "untouched"]
+}

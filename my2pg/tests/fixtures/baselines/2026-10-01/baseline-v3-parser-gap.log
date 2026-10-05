@@ -1,0 +1,92 @@
+2026-10-01T18:36:43.004000Z LOG pgloader version "3.6.10~devel"
+2026-10-01T18:36:43.005000Z LOG Data errors in '/tmp/pgloader/'
+2026-10-01T18:36:43.005000Z LOG Parsing commands from file #P"/suite/baseline-v3.load"
+KABOOM!
+ESRAP-PARSE-ERROR: At
+
+   FROM mysql://my2pg:integration-only@mysql:3306/source?useSSL=true
+   INTO postgresql://my2pg:integration-only@postgres:5432/target?sslmode=verify-ca&sslrootcert=/s
+                                                                         ^ (Line 3, Column 71, Position 152)
+
+In context DSN-OPTION-SSL:
+
+While parsing DSN-OPTION-SSL-VERIFY-FULL. Expected:
+
+     the string "verify-full"
+
+While parsing DSN-OPTION-SSL-REQUIRE. Expected:
+
+     the string "require"
+
+While parsing DSN-OPTION-SSL-PREFER. Expected:
+
+     the string "prefer"
+
+While parsing DSN-OPTION-SSL-ALLOW. Expected:
+
+     the string "allow"
+
+While parsing DSN-OPTION-SSL-DISABLE. Expected:
+
+     the string "disable"
+An unhandled error condition has been signalled: At
+
+   FROM mysql://my2pg:integration-only@mysql:3306/source?useSSL=true
+   INTO postgresql://my2pg:integration-only@postgres:5432/target?sslmode=verify-ca&sslrootcert=/s
+                                                                         ^ (Line 3, Column 71, Position 152)
+
+In context DSN-OPTION-SSL:
+
+While parsing DSN-OPTION-SSL-VERIFY-FULL. Expected:
+
+     the string "verify-full"
+
+While parsing DSN-OPTION-SSL-REQUIRE. Expected:
+
+     the string "require"
+
+While parsing DSN-OPTION-SSL-PREFER. Expected:
+
+     the string "prefer"
+
+While parsing DSN-OPTION-SSL-ALLOW. Expected:
+
+     the string "allow"
+
+While parsing DSN-OPTION-SSL-DISABLE. Expected:
+
+     the string "disable"
+
+
+
+
+What I am doing here?
+
+At
+
+   FROM mysql://my2pg:integration-only@mysql:3306/source?useSSL=true
+   INTO postgresql://my2pg:integration-only@postgres:5432/target?sslmode=verify-ca&sslrootcert=/s
+                                                                         ^ (Line 3, Column 71, Position 152)
+
+In context DSN-OPTION-SSL:
+
+While parsing DSN-OPTION-SSL-VERIFY-FULL. Expected:
+
+     the string "verify-full"
+
+While parsing DSN-OPTION-SSL-REQUIRE. Expected:
+
+     the string "require"
+
+While parsing DSN-OPTION-SSL-PREFER. Expected:
+
+     the string "prefer"
+
+While parsing DSN-OPTION-SSL-ALLOW. Expected:
+
+     the string "allow"
+
+While parsing DSN-OPTION-SSL-DISABLE. Expected:
+
+     the string "disable"
+

@@ -1,0 +1,15 @@
+-- Proposed positive importer fixture, not a migration to execute today.
+-- Import must emit environment references, not copy credentials into TOML.
+LOAD DATABASE
+     FROM mysql://reader@localhost/shop
+     INTO postgresql://writer@localhost/warehouse
+
+ WITH include no drop, no truncate,
+      create tables, create indexes, reset sequences,
+      quote identifiers, workers = 4,
+      batch rows = 25000
+
+ CAST type datetime to timestamp
+      drop default drop not null using zero-dates-to-null
+
+ ALTER SCHEMA 'shop' RENAME TO 'legacy';

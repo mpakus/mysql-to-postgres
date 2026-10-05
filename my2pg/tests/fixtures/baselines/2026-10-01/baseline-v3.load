@@ -1,0 +1,7 @@
+LOAD DATABASE
+ FROM mysql://my2pg:integration-only@mysql:3306/source?useSSL=true
+ INTO postgresql://my2pg:integration-only@postgres:5432/target?sslmode=require
+ WITH concurrency = 1, workers = 1, include no drop, create tables, create indexes, reset sequences, quote identifiers
+ INCLUDING ONLY TABLE NAMES MATCHING 'users'
+ ALTER SCHEMA 'source' RENAME TO 'baseline_v3'
+ CAST type datetime to timestamp;

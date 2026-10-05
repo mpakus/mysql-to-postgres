@@ -1,0 +1,79 @@
+name: Rust foundation
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+env:
+  RUSTUP_TOOLCHAIN: 1.99.0
+  CARGO_TERM_COLOR: always
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Install pinned Rust
+        run: rustup toolchain install 1.99.0 --profile minimal --component rustfmt,clippy
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --locked --all-targets --all-features -- -D warnings
+      - run: cargo test --locked --all-targets --all-features -- --test-threads=1
+      - name: Fixture provenance
+        run: python3 tests/support/fixture_manifest.py
+      - name: Benchmark runner unit tests
+        run: python3 -m unittest tests/performance/test_runner.py -v
+      - name: Install pinned cargo-about
+        run: |
+          archive="$RUNNER_TEMP/cargo-about-0.8.4-x86_64-unknown-linux-musl.tar.gz"
+          curl --fail --location --silent --show-error \
+            https://github.com/EmbarkStudios/cargo-about/releases/download/0.8.4/cargo-about-0.8.4-x86_64-unknown-linux-musl.tar.gz \
+            --output "$archive"
+          echo 'c7381aa0cdc41fc0ee662cec8daa260da7817ad8ddea04cd4ddad425460adf14  '"$archive" | sha256sum --check
+          mkdir "$RUNNER_TEMP/cargo-about"
+          tar -xzf "$archive" -C "$RUNNER_TEMP/cargo-about"
+          echo "$RUNNER_TEMP/cargo-about/cargo-about-0.8.4-x86_64-unknown-linux-musl" >> "$GITHUB_PATH"
+      - name: Fetch all locked target sources
+        run: cargo fetch --locked
+      - name: Database-free support regressions
+        run: python3 -m unittest discover -s tests/support -p 'test_*.py' -v
+      - name: Verify dependency license notices and source package
+        run: ./bin/check-third-party-notices.sh --check
+  database:
+    name: ${{ matrix.mysql }} to ${{ matrix.postgres }}
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - mysql: mysql84
+            postgres: pg16
+          - mysql: mysql80
+            postgres: pg18
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Install pinned Rust
+        run: rustup toolchain install 1.99.0 --profile minimal
+      - name: Fetch locked dependencies
+        run: ./bin/cargo fetch --locked
+      - name: Run native disposable database lane
+        run: ./tests/run-integration.sh ${{ matrix.mysql }} ${{ matrix.postgres }}
+  database-amd64:
+    name: ${{ matrix.mysql }} to ${{ matrix.postgres }} (AMD64)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - mysql: mysql57
+            postgres: pg16
+          - mysql: mysql57
+            postgres: pg17
+          - mysql: mysql57
+            postgres: pg18
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Install pinned Rust
+        run: rustup toolchain install 1.99.0 --profile minimal
+      - name: Fetch locked dependencies
+        run: ./bin/cargo fetch --locked
+      - name: Run native disposable database lane
+        run: ./tests/run-integration.sh ${{ matrix.mysql }} ${{ matrix.postgres }}

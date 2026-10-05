@@ -1,0 +1,696 @@
+{
+  "format_version": 1,
+  "upstream_url": "https://github.com/dimitri/pgloader",
+  "upstream_revision": "231ab86778ca5ffd7de40878714760c8b4860cdf",
+  "selection": "Every .load under test/mysql, clojure/tests/mysql/* and mysql-unit-full, plus test/mysql-collision.load and test/sakila*.load; every MySQL-containing deftest in selected parser/AST suites.",
+  "load_fixtures": [
+    {
+      "path": "clojure/tests/mysql-unit-full/mysql-unit-full.load",
+      "sha256": "b822db550b6cf79845635b205be483a5fbde6ca43b45ff05fbe7eb149e75d693",
+      "classification": "duplicate",
+      "rationale": "Feature corpus merged into unified mytest; Mustache host interpolation is separately rejected by the strict importer.",
+      "case_ids": [
+        "IMPORT-MUSTACHE-REJECT",
+        "IMPORT-TRANSFORM-ONLY",
+        "DDL-CHECK-BEHAVIOR"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/f1db/f1db.load",
+      "sha256": "626f65279318c83e797f513a76f4ebbe78efd6dc727b16641a13600dca76ef96",
+      "classification": "duplicate",
+      "rationale": "Same simple F1DB migration as test/mysql/f1db.load, different connection endpoints.",
+      "case_ids": [
+        "REL-F1DB",
+        "IMPORT-F1DB-SCHEMA-REQUIRED"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/my-cnf/my-cnf.load",
+      "sha256": "3e149b178b7fd8db2b4029ce382f7bbba6cfbfe216ca0582d6e53a4901277ae0",
+      "classification": "unsupported",
+      "rationale": "MySQL option-file credential lookup is excluded; explicit env/file credentials replace it.",
+      "case_ids": [
+        "IMPORT-MY-CNF-REJECT"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/mytest.load",
+      "sha256": "2b76fe7561aca2f2c5a3c70d6307c3833e84d4d5e180fcd2e21ffa5ace7b4348",
+      "classification": "intentional difference",
+      "rationale": "Unified behavioral corpus retained with explicit type policies; tablespace clause is rejected instead of silently ignored and unsigned/time defaults differ.",
+      "case_ids": [
+        "IMPORT-MYTEST-STRICT",
+        "IMPORT-TABLESPACE-REJECT"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/sakila/sakila.load",
+      "sha256": "0d0e639998c46adb4de089eb34fd505443da8ed621a91bacfac8aba92619a2db",
+      "classification": "duplicate",
+      "rationale": "Consolidated Sakila equivalent with views commented out; relation and cast cases tracked under REL-SAKILA.",
+      "case_ids": [
+        "REL-SAKILA"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "test/mysql-collision.load",
+      "sha256": "b3091b900eea364f409c45ef1563fc2400a5ba8430122bea323af3e85a66f7df",
+      "classification": "intentional difference",
+      "rationale": "Plan must detect collisions after deterministic byte-limit allocation before executing hooks; pgloader fixture uses unsafe drop policy.",
+      "case_ids": [
+        "DDL-IDENTIFIER-COLLISION",
+        "HOOKS-PLAN-READONLY"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "test/mysql/db789.load",
+      "sha256": "186164f21851138de51f392e7c8daeddb396515738b6ee0b222ddcf2737d58a8",
+      "classification": "unsupported",
+      "rationale": "Inline source view creation writes to MySQL; only existing view snapshots are supported.",
+      "case_ids": [
+        "IMPORT-SOURCE-VIEW-REJECT",
+        "VIEW-EXISTING-READ"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "test/mysql/f1db-citus.load",
+      "sha256": "b3225a7aacc0875798038d47e23823792d2e59ef717332c3f04b2af76399ef1c",
+      "classification": "unsupported",
+      "rationale": "Citus distribution is explicitly excluded.",
+      "case_ids": [
+        "SCOPE-CITUS-REJECT"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "test/mysql/f1db-data.load",
+      "sha256": "89d035a535c1f365006f8dc85a0241f54009e405ac0639a7c520a7d3f0f90711",
+      "classification": "unsupported",
+      "rationale": "Inline source view creation and disable triggers are excluded; no truncate needs explicit data-only policy.",
+      "case_ids": [
+        "IMPORT-SOURCE-VIEW-REJECT",
+        "IMPORT-DISABLE-TRIGGERS-REJECT",
+        "IMPORT-NO-TRUNCATE"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "test/mysql/f1db.load",
+      "sha256": "e0230bce9ec4d629097ac54eba5c80501e211c9718ae3bdb8df0077d83cba5ae",
+      "classification": "intentional difference",
+      "rationale": "Simple load lacks mandatory destination schema and embeds JDBC useSSL option; import must materialize reviewed settings rather than execute implicitly.",
+      "case_ids": [
+        "IMPORT-F1DB-SCHEMA-REQUIRED",
+        "REL-F1DB"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "test/mysql/my.load",
+      "sha256": "c93422ee14cd9ffa55fe73516a4f4a9e0d0ace70c67992dba9cb5370dcc778e2",
+      "classification": "intentional difference",
+      "rationale": "Unix source socket/table tablespace and legacy transforms require explicit unsupported diagnostics; numeric and binary expectations become independent cases.",
+      "case_ids": [
+        "IMPORT-UNIX-SOCKET-REJECT",
+        "IMPORT-TABLESPACE-REJECT",
+        "NUM-CORE",
+        "VALUE-BINARY"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "test/sakila-data.load",
+      "sha256": "35d19016d77dd2fd55173a3b8e66a7f26105c12ab1719e820dd6d3c9065bf6b9",
+      "classification": "intentional difference",
+      "rationale": "Data-only preserves existing constraints; filtered parent mappings and existing view snapshots need explicit validation.",
+      "case_ids": [
+        "MODE-DATA-ONLY",
+        "DDL-FILTERED-PARENT",
+        "VIEW-EXISTING-READ"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "test/sakila.load",
+      "sha256": "2c305840be46a422543515ea9a59e7e27871b1440eee897d208cef95916239c1",
+      "classification": "intentional difference",
+      "rationale": "Existing view snapshots are supported but table storage options and implicit per-table schemas need explicit policy; external corpus separately provisioned.",
+      "case_ids": [
+        "REL-SAKILA",
+        "VIEW-EXISTING-READ",
+        "IMPORT-STORAGE-REJECT"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    }
+  ],
+  "parser_cases": [
+    {
+      "path": "clojure/test/pgloader/load_file/parser_test.clj",
+      "sha256": "e730d76158a8be8228b4a728f92cceb40eb826582121e2376cfd97e24b1e3b82",
+      "classification": "intentional difference",
+      "rationale": "Port MySQL-specific parser behavior under mandatory schema, strict clause validation and explicit type/credential policies.",
+      "case_ids": [
+        "IMPORT-PARSE-MYSQL-DATABASE"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-parse-mysql-database",
+      "line": 41
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/parser_test.clj",
+      "sha256": "e730d76158a8be8228b4a728f92cceb40eb826582121e2376cfd97e24b1e3b82",
+      "classification": "intentional difference",
+      "rationale": "Port MySQL-specific parser behavior under mandatory schema, strict clause validation and explicit type/credential policies.",
+      "case_ids": [
+        "IMPORT-PARSE-MYSQL-WITH-CAST"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-parse-mysql-with-cast",
+      "line": 53
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/parser_test.clj",
+      "sha256": "e730d76158a8be8228b4a728f92cceb40eb826582121e2376cfd97e24b1e3b82",
+      "classification": "intentional difference",
+      "rationale": "Port MySQL-specific parser behavior under mandatory schema, strict clause validation and explicit type/credential policies.",
+      "case_ids": [
+        "IMPORT-PARSE-CAST-WHEN-DEFAULT-AND-NOT-NULL"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-parse-cast-when-default-and-not-null",
+      "line": 68
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/parser_test.clj",
+      "sha256": "e730d76158a8be8228b4a728f92cceb40eb826582121e2376cfd97e24b1e3b82",
+      "classification": "unsupported",
+      "rationale": "Citus DISTRIBUTE is excluded and must fail atomically.",
+      "case_ids": [
+        "IMPORT-DISTRIBUTE-REFERENCE-PARSE"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-distribute-reference-parse",
+      "line": 293
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/parser_test.clj",
+      "sha256": "e730d76158a8be8228b4a728f92cceb40eb826582121e2376cfd97e24b1e3b82",
+      "classification": "unsupported",
+      "rationale": "Citus DISTRIBUTE is excluded and must fail atomically.",
+      "case_ids": [
+        "IMPORT-DISTRIBUTE-USING-PARSE"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-distribute-using-parse",
+      "line": 303
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/parser_test.clj",
+      "sha256": "e730d76158a8be8228b4a728f92cceb40eb826582121e2376cfd97e24b1e3b82",
+      "classification": "unsupported",
+      "rationale": "Citus DISTRIBUTE is excluded and must fail atomically.",
+      "case_ids": [
+        "IMPORT-DISTRIBUTE-MULTIPLE-RULES"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-distribute-multiple-rules",
+      "line": 313
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/parser_test.clj",
+      "sha256": "e730d76158a8be8228b4a728f92cceb40eb826582121e2376cfd97e24b1e3b82",
+      "classification": "intentional difference",
+      "rationale": "Port MySQL-specific parser behavior under mandatory schema, strict clause validation and explicit type/credential policies.",
+      "case_ids": [
+        "IMPORT-NO-DISTRIBUTE-RULES-DEFAULT"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-no-distribute-rules-default",
+      "line": 325
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/parser_test.clj",
+      "sha256": "e730d76158a8be8228b4a728f92cceb40eb826582121e2376cfd97e24b1e3b82",
+      "classification": "intentional difference",
+      "rationale": "Port MySQL-specific parser behavior under mandatory schema, strict clause validation and explicit type/credential policies.",
+      "case_ids": [
+        "IMPORT-DECODING-AS-REGEX-PARSE"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-decoding-as-regex-parse",
+      "line": 333
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/parser_test.clj",
+      "sha256": "e730d76158a8be8228b4a728f92cceb40eb826582121e2376cfd97e24b1e3b82",
+      "classification": "intentional difference",
+      "rationale": "Port MySQL-specific parser behavior under mandatory schema, strict clause validation and explicit type/credential policies.",
+      "case_ids": [
+        "IMPORT-DECODING-AS-MULTIPLE-PATTERNS"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-decoding-as-multiple-patterns",
+      "line": 347
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/parser_test.clj",
+      "sha256": "e730d76158a8be8228b4a728f92cceb40eb826582121e2376cfd97e24b1e3b82",
+      "classification": "unsupported",
+      "rationale": "Broad schema drops and implicit index removal are excluded; explicit scoped target policy is required.",
+      "case_ids": [
+        "IMPORT-WITH-DROP-SCHEMA"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-with-drop-schema",
+      "line": 357
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/parser_test.clj",
+      "sha256": "e730d76158a8be8228b4a728f92cceb40eb826582121e2376cfd97e24b1e3b82",
+      "classification": "unsupported",
+      "rationale": "Broad schema drops and implicit index removal are excluded; explicit scoped target policy is required.",
+      "case_ids": [
+        "IMPORT-WITH-REINDEX"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-with-reindex",
+      "line": 365
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/parser_test.clj",
+      "sha256": "e730d76158a8be8228b4a728f92cceb40eb826582121e2376cfd97e24b1e3b82",
+      "classification": "intentional difference",
+      "rationale": "Port MySQL-specific parser behavior under mandatory schema, strict clause validation and explicit type/credential policies.",
+      "case_ids": [
+        "IMPORT-WITH-PRESERVE-INDEX-NAMES"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-with-preserve-index-names",
+      "line": 396
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/parser_test.clj",
+      "sha256": "e730d76158a8be8228b4a728f92cceb40eb826582121e2376cfd97e24b1e3b82",
+      "classification": "intentional difference",
+      "rationale": "Port MySQL-specific parser behavior under mandatory schema, strict clause validation and explicit type/credential policies.",
+      "case_ids": [
+        "IMPORT-CAST-COLUMN-NO-TYPE"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-cast-column-no-type",
+      "line": 446
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/parser_test.clj",
+      "sha256": "e730d76158a8be8228b4a728f92cceb40eb826582121e2376cfd97e24b1e3b82",
+      "classification": "intentional difference",
+      "rationale": "Port MySQL-specific parser behavior under mandatory schema, strict clause validation and explicit type/credential policies.",
+      "case_ids": [
+        "IMPORT-CAST-TARGET-TYPE-MULTI-WORD"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-cast-target-type-multi-word",
+      "line": 464
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/ast_test.clj",
+      "sha256": "04a6a7d3d78f19333f99e83edaa347dea0a3cee47979889d54a90239ee227367",
+      "classification": "intentional difference",
+      "rationale": "Port MySQL-specific parser behavior under mandatory schema, strict clause validation and explicit type/credential policies.",
+      "case_ids": [
+        "IMPORT-CAST-RULE-WHEN-NOT-NULL"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-cast-rule-when-not-null",
+      "line": 8
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/ast_test.clj",
+      "sha256": "04a6a7d3d78f19333f99e83edaa347dea0a3cee47979889d54a90239ee227367",
+      "classification": "intentional difference",
+      "rationale": "Port MySQL-specific parser behavior under mandatory schema, strict clause validation and explicit type/credential policies.",
+      "case_ids": [
+        "IMPORT-PARSE-MYSQL-URI"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-parse-mysql-uri",
+      "line": 26
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/ast_test.clj",
+      "sha256": "04a6a7d3d78f19333f99e83edaa347dea0a3cee47979889d54a90239ee227367",
+      "classification": "unsupported",
+      "rationale": "JDBC source URI is excluded; mysql:// URI is required.",
+      "case_ids": [
+        "IMPORT-PARSE-JDBC-MYSQL-URI"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-parse-jdbc-mysql-uri",
+      "line": 38
+    },
+    {
+      "path": "clojure/test/pgloader/load_file/ast_test.clj",
+      "sha256": "04a6a7d3d78f19333f99e83edaa347dea0a3cee47979889d54a90239ee227367",
+      "classification": "intentional difference",
+      "rationale": "Port MySQL-specific parser behavior under mandatory schema, strict clause validation and explicit type/credential policies.",
+      "case_ids": [
+        "IMPORT-JDBC-URLS-ACCEPTED-BY-DRIVERS"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending",
+      "symbol": "test-jdbc-urls-accepted-by-drivers",
+      "line": 123
+    }
+  ],
+  "assertion_cases": [
+    {
+      "path": "clojure/tests/mysql/mytest/sql/01-tables.sql",
+      "sha256": "8a056559ff7f479f5ecd75edf889cf26d73ac0734be85dddb4ecf5399e06fd91",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-01-TABLES"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/02-schema.sql",
+      "sha256": "7a84ca9841bdd9ddb77d613f1650638947dbb2b67e5ce62da54a362bad3d5648",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-02-SCHEMA"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/03-indexes.sql",
+      "sha256": "cbeffd5eb39719088d3e17d99948b020954a64029f06742c17eae727d2d53940",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-03-INDEXES"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/04-expression-index.sql",
+      "sha256": "4f3800540c3b2a81c70ae13dceec3910436ee4d5f679c8a95824a6f8bbe66930",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-04-EXPRESSION-INDEX"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/05-camelcase.sql",
+      "sha256": "64ec5317f85228644c1f14b6a649178527eae0e77976fdd18e19d6d4ee19348f",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-05-CAMELCASE"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/06-datetime-precision.sql",
+      "sha256": "a3cd3382c0879c3a283f908f773e834a45e194c9d6c3eaa38948cac6595c738a",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-06-DATETIME-PRECISION"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/07-bit-defaults.sql",
+      "sha256": "cf0d4286d81a5f9b68a9bae5dde36848235ac66d7fad303f7765ad6a39d4d15a",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-07-BIT-DEFAULTS"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/08-check-constraints.sql",
+      "sha256": "625b6d2d03dade6ed42283cdbbf711ec73b3f1960c396aeb6a64f601cca4a075",
+      "classification": "intentional difference",
+      "rationale": "Execute accepted and constraint-violating inserts, not only inspect CHECK presence.",
+      "case_ids": [
+        "UP-MYTEST-08-CHECK-CONSTRAINTS"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/09-on-update-trigger.sql",
+      "sha256": "2332fea970fb087445114439a6fb25247cdb0b145c099162dc849acc4fa6812f",
+      "classification": "intentional difference",
+      "rationale": "Execute timestamp update behavior, rather than checking trigger presence alone.",
+      "case_ids": [
+        "UP-MYTEST-09-ON-UPDATE-TRIGGER"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/10-hex-to-bytea.sql",
+      "sha256": "b248cdf079d66bb6d144f1f791485133b21866b93c400143c3a74d6080acc241",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-10-HEX-TO-BYTEA"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/11-without-type.sql",
+      "sha256": "729be2f5e5b80dc5703edb6d3130ed075fae9f37ec911defa36d23e8f0da249b",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-11-WITHOUT-TYPE"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/12-pkeys.sql",
+      "sha256": "19e62fa6d266d8bc887523d65f9341ad8c3baa75a2ebd6a6f866dbc919768541",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-12-PKEYS"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/13-zero-dates-cast.sql",
+      "sha256": "ceff48052f5e4d30dcb3b983ca4f08fe82c9cf914b7a1aac95cbee3f96640955",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-13-ZERO-DATES-CAST"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/14-zero-dates-values.sql",
+      "sha256": "bba16db55185e70ebd785e73516f03b95252d7d76ea0d8400329189c923c3b81",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-14-ZERO-DATES-VALUES"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/15-latin1-encoding.sql",
+      "sha256": "ea66cea4dd6777be3bf2278709452885041ec78176f5a128671dbea09a0d1717",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-15-LATIN1-ENCODING"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/16-varbinary-to-inet.sql",
+      "sha256": "4fb5514d8b7b1b3fc17b5241dc8e4d1639e5c9c3bf7e9523c5b6a2067be80c30",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-16-VARBINARY-TO-INET"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/17-binary-types.sql",
+      "sha256": "7e1bccab96a4d8919d33b89e142b56f1f86d7c38093462c042dc67d7f11254f2",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-17-BINARY-TYPES"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/18-sequences.sql",
+      "sha256": "5c9fec2b6b44513bb68fbc28f5586d6771a26eedfff1aaa52b0e4aea159f982c",
+      "classification": "intentional difference",
+      "rationale": "Verify identity ownership and actual next insert plus source next-value lower bound.",
+      "case_ids": [
+        "UP-MYTEST-18-SEQUENCES"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/sql/19-decoding-as.sql",
+      "sha256": "91bf451ed39fc787b7da5f129f68d366f17ae68ccb5d4b3a2b8528a1526a84d6",
+      "classification": "intentional difference",
+      "rationale": "Translate this upstream assertion surface into independent structural/value expectations; do not regenerate legacy expected output as truth.",
+      "case_ids": [
+        "UP-MYTEST-19-DECODING-AS"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    }
+  ],
+  "supplemental_sql": [
+    {
+      "path": "test/mysql/my.sql",
+      "sha256": "409b2c5a5924b168c9450754737c1a5f4a2e36b6c4ebbdbe7f070897e7be8aeb",
+      "classification": "duplicate",
+      "rationale": "Retain reviewed scenarios through independently authored bounded synthetic cases; unified corpus supersedes duplicate seeds; original bytes remain read-only.",
+      "case_ids": [
+        "SEED-MY"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "test/mysql/hex.sql",
+      "sha256": "40e800dd19257ede809ac86a00f7769e1c83683543ccc92b6593479039a626e4",
+      "classification": "intentional difference",
+      "rationale": "Retain reviewed scenarios through independently authored bounded synthetic cases; unified corpus supersedes duplicate seeds; original bytes remain read-only.",
+      "case_ids": [
+        "SEED-HEX"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "test/mysql/history.sql",
+      "sha256": "f69f5e2c78f2274b9a14a62949983859f286d8d2a1fabccf70aa3d83cc42c6b4",
+      "classification": "duplicate",
+      "rationale": "Retain reviewed scenarios through independently authored bounded synthetic cases; unified corpus supersedes duplicate seeds; original bytes remain read-only.",
+      "case_ids": [
+        "SEED-HISTORY"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "test/mysql/db789.sql",
+      "sha256": "e5cd5acf79a81b69194e388cd991bd921c91c7108df6d3ace4c05398e8805cb7",
+      "classification": "intentional difference",
+      "rationale": "Retain reviewed scenarios through independently authored bounded synthetic cases; unified corpus supersedes duplicate seeds; original bytes remain read-only.",
+      "case_ids": [
+        "SEED-DB789"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql-unit-full/mysql-unit-full.sql",
+      "sha256": "3cf619dcbf5deaf00b38482e371f5de143be58175ae34953d1e8191c4211668d",
+      "classification": "duplicate",
+      "rationale": "Retain reviewed scenarios through independently authored bounded synthetic cases; unified corpus supersedes duplicate seeds; original bytes remain read-only.",
+      "case_ids": [
+        "SEED-MYSQL-UNIT-FULL"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    },
+    {
+      "path": "clojure/tests/mysql/mytest/mytest.sql",
+      "sha256": "67d895016583c26b0f7af4f692e59cf9ecc375bd8084b2ecd8b3fa3156a9c143",
+      "classification": "intentional difference",
+      "rationale": "Retain reviewed scenarios through independently authored bounded synthetic cases; unified corpus supersedes duplicate seeds; original bytes remain read-only.",
+      "case_ids": [
+        "SEED-MYTEST"
+      ],
+      "license": "PostgreSQL (pgloader/LICENSE); external dataset notices separately apply",
+      "implementation_status": "pending"
+    }
+  ],
+  "external_datasets": [
+    {
+      "id": "REL-SAKILA",
+      "upstream": "Oracle Sakila, local pgloader/test/data/sakila-db.zip",
+      "license": "BSD-3-Clause with original Oracle notice",
+      "status": "not provisioned"
+    },
+    {
+      "id": "REL-F1DB",
+      "upstream": "Ergast 2024 via test/mysql/download-f1db.sh",
+      "license": "license/attribution review required before redistribution",
+      "status": "not provisioned"
+    }
+  ]
+}

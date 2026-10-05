@@ -1,0 +1,56 @@
+# Version 1 configuration. Consult the task board for verified execution features.
+version = 1
+
+[source]
+url_env = "MY2PG_MYSQL_URL"
+# Use only with a static source clone or a verified freeze of writers and DDL.
+consistency = "frozen"
+tls_mode = "verify_full"
+
+[source.session]
+time_zone = "+00:00"
+
+[target]
+url_env = "MY2PG_POSTGRES_URL"
+schema = "legacy"
+tls_mode = "verify_full"
+on_existing = "error"
+
+[target.session]
+application_name = "my2pg"
+timezone = "UTC"
+
+[migration]
+mode = "full"
+identifiers = "preserve"
+table_workers = 4
+readers_per_table = 1
+index_workers = 2
+batch_rows = 25000
+batch_bytes = 16777216
+queue_batches = 2
+memory_bytes = 536870912
+max_row_bytes = 16777216
+on_row_error = "stop"
+max_rejected_rows = 0
+reset_sequences = true
+
+[tables]
+include = []
+exclude = []
+
+# Optional explicit transform. This changes source zero dates to SQL NULL.
+[[cast]]
+source_type = "datetime"
+target_type = "timestamp"
+transform = "zero-dates-to-null"
+drop_default = true
+drop_not_null = true
+
+[verification]
+mode = "counts_and_schema"
+
+[report]
+directory = "./runs"
+console = "text"
+progress = "auto"
