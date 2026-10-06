@@ -14,8 +14,9 @@ ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "my2pg/docs/reference-repositories.json"
 EXTENSIONS = {".rs", ".lisp", ".clj", ".cljs", ".edn", ".asd", ".load", ".sql",
               ".md", ".rst", ".txt", ".toml", ".yaml", ".yml", ".json", ".sh",
-              ".py", ".c", ".h", ".ppl", ".out", ".csv", ".stderr", ".patch"}
-NAMES = {"Makefile", "Dockerfile", "LICENSE", "LICENSE-MIT", "LICENSE-APACHE", "COPYING"}
+              ".py", ".ps1", ".c", ".h", ".ppl", ".out", ".csv", ".stderr", ".patch"}
+NAMES = {"Makefile", "Dockerfile", "LICENSE", "LICENSE-MIT", "LICENSE-APACHE", "COPYING",
+         "build-linux", "build-macos"}
 IGNORED = {"target", "build", "dist", "node_modules", "__pycache__", "vendor"}
 SYMBOLS = re.compile(r"(?:\b(?:fn|struct|enum|trait|type|mod|const)\s+|"
                      r"\(\s*(?:defn-?|defun|defmethod|defclass|defmacro)\s+)([A-Za-z_][\w!?-]*)")
@@ -33,6 +34,10 @@ def documents(corpus):
     root = ROOT / corpus["path"]
     revision = None
     git_corpus = (root / ".git").exists()
+    if not git_corpus:
+        probe = subprocess.run(["git", "-C", str(root), "rev-parse", "--is-inside-work-tree"],
+                               capture_output=True, text=True)
+        git_corpus = probe.returncode == 0 and probe.stdout.strip() == "true"
     if git_corpus:
         revision = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
         if corpus["commit"] and revision != corpus["commit"]:

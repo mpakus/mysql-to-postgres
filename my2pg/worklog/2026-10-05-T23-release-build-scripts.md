@@ -1,0 +1,42 @@
+# 2026-10-05 — T23 — release build scripts
+
+- Status: implemented; macOS ARM64 and Docker Linux ARM64 build/package/CLI checks passed
+- Owner: coordinator; lease `bin/build-*`, `Dockerfile`, `Cargo.toml` packaging allowlist, `tests/support/test_release_build.py`, release documentation and this worklog
+- Source HEAD: `8316473e60f5149785af78fb987d7a63fdb851c0`; existing parity-review worklog is preserved
+
+## Reference research before code
+
+- Read project instructions, reference workflow, scope, T23 ownership, current Cargo/toolchain pin, `bin/cargo`, Dockerfile, package-boundary checks and local reproducibility worklog.
+- XERJ `project-my2pg` query `release packaging checksums Windows native Linux macOS` located T23 packaging/reproducibility evidence. Indexed revision is `db28c459a8a3caf45b07e9e72bcbc9fd3194c762`; current original files at HEAD above were read rather than treating that older snapshot as current source.
+- XERJ `ref-dmt-rs` query `release cargo build target windows darwin`, pinned commit `4e8015f7e841dbdf9df01e953aeb3948dfb3199a`, located build guidance. Hidden workflow files are outside index coverage; read original `.github/workflows/release.yml:20-69,96-101` directly. It builds OS-specific targets, uses `.exe` on Windows, and hashes final artifacts. Adapt target selection/archive checksums independently; reject automatic publication and blanket platform-support claims.
+- Official Cargo build documentation confirms `--release`, `--bin`, `--target`, locked inputs and compiler JSON artifacts: <https://doc.rust-lang.org/cargo/commands/cargo-build.html>. Docker's local exporter supports extracting a scratch stage: <https://docs.docker.com/build/exporters/local-tar/>.
+- Current Rust Windows boundaries: `src/report/mod.rs::sync_directory` is a no-op outside Unix, private creation modes are Unix-only, and report publication uses `fs::rename` over the prior file. Windows can have an experimental compiler path, but no tested durable Windows migration claim is made. Do not broaden the migration scope or replace durability operations with success stubs.
+- RTK wrapper and `/Users/renatibragimov/.claude/RTK.md` were used. Ponytail was found outside the default skill roots at `/Users/renatibragimov/.claude/skills/ponytail/SKILL.md` and read in full. Apply its standard-library/smallest-complete-solution guidance; no new dependency or Rust runtime change is needed.
+
+## Chosen adaptation and checks
+
+Add one Python standard-library release builder and Linux/macOS shell plus Windows PowerShell entry points. Use the pinned Cargo release profile and locked dependency graph, build only the production binary, select supported target triples explicitly, and refuse mismatched native hosts. Use the existing pinned Docker builder for Linux builds from another OS; export its binary through a scratch stage. Bundle operator docs/examples and required notices, record source/build provenance and the experimental Windows limitation, and hash final archives. Preserve previous outputs if compilation fails.
+
+Add small behavioral support checks for target/host refusal, build failure/artifact selection, and actual archive/checksum contents. Run those checks and source-package selection checks. Build a native macOS ARM64 archive and a Docker Linux ARM64 archive when available, extract them and run basic CLI smoke checks. Windows/macOS x86_64/Linux AMD64 builds remain unverified unless actually executed. No publication, signing, or release-gate completion follows merely from successful compilation.
+
+## Implementation and evidence
+
+- Added `bin/build-release.py` with standard-library-only compilation/artifact selection, native host/target checks, Docker export, packaging and checksums; `bin/build-linux`, `bin/build-macos`, and `bin/build-windows.ps1` provide platform entry points.
+- Added the `release-binary` scratch exporter stage without changing the existing runtime stage's contents, user or entry point. Native builds use the pinned `bin/cargo` wrapper and explicit release target; Docker uses the existing pinned Bookworm Rust image. Only `my2pg` is compiled, with locked dependencies.
+- Archives include operator docs/examples, project/dependency notices, source revision/dirty-state metadata, per-file hashes and an external archive SHA-256. Windows bundles/console explicitly carry the experimental durability/privacy limitation. No binary/source credentials, fixtures, worklogs or alternate-source tooling are bundled.
+- Added release instructions and the missing root README required by existing package-boundary tests. Extended Cargo's source-package allowlist/tests so the build scripts and release documentation survive source packaging. Generated binary archives stay under ignored `target/dist/`.
+- `python3 -m unittest discover -s tests/support -p 'test_*.py' -v`: 39/39 passed, including four release-script behavioral checks, three package-boundary checks and two release source-scope checks. `sh -n` on both entry points, Python bytecode compilation using a workspace cache, and `git diff --check` passed.
+- `./bin/build-macos --offline` built `target/dist/my2pg-0.1.0-aarch64-apple-darwin.tar.gz`; SHA-256 `bc7f74aef78819d1a162d02bca50d4e904b13af8d9a64a180911a35594531eef`. Its extracted native binary passed `--version`, `--help`, and JSON `check` against the example with dummy loopback-port-1 URLs (no database connections).
+- `./bin/build-linux --docker --target aarch64-unknown-linux-gnu` built `target/dist/my2pg-0.1.0-aarch64-unknown-linux-gnu.tar.gz`; SHA-256 `49f4fa2f38c0bcb03faa6026c9645b58afb2eb6fbeaa3197c62652fae4cb1cba`. The exact extracted binary passed the same CLI/offline checks under `--network none` in the pinned Linux ARM64 runtime image (`sha256:16860516fabbc71495c1b91414f82c8fb7145aa5487163a031b75546650fe755`). The temporary smoke image tag was removed.
+- Host-side SHA-256 checks verified each real archive and every file in its internal `SHA256SUMS`. All generated archives record the dirty current source; the original parity-review worklog was preserved.
+- Windows/MSVC and PowerShell were unavailable on this Mac; no Windows compilation/execution was claimed. Intel macOS/Linux AMD64 targets were not built in this increment. No database migration tests, signing/notarization or publication ran. T23 remains in progress under its wider release gates.
+
+## Project-index refresh research
+
+Read `bin/reference-index.py`'s explicit format/name allowlists before changing them: `.ps1` and extensionless build wrappers would otherwise be excluded. Extend only the PowerShell text format and these two entry-point names, then refresh `project-my2pg` as coordinator and verify all four new build scripts plus tests/docs occur in its coverage report. Reference pins/checkouts remain untouched.
+
+The first refresh exposed a current-layout bug: this checkout's Git root is the parent `pg/`, while the importer only recognized a `.git` directly inside the corpus. It walked hundreds of thousands of ignored build files and recorded no revision. Fresh XERJ query `project-my2pg "source index git corpus parent directory revision"` located the importer's original `documents` implementation (that temporary index labeled it `uncommitted`). Verified parent Git discovery and corpus-relative `git ls-files` locally. Adapt the existing Git path to also recognize an enclosing worktree; keep non-Git fallback and pinned-reference checks. Add one isolated nested-Git regression proving revision metadata, source/build-script inclusion and ignored-target exclusion before refreshing again.
+
+The nested-Git regression passed. The refreshed complete support suite passes 40/40 after this fix. This internal importer regression is excluded from Cargo's source package along with the importer itself; release-script checks remain shipped, and package-boundary tests enforce this distinction. The release builder/Rust runtime did not change during this follow-up.
+
+Final coordinator refresh: 465 included files / 1,578 passages / 14 exclusions, with revision `8316473e60f5149785af78fb987d7a63fdb851c0`. Coverage assertions include all four new build scripts, release docs and both regression files, and exclude `target/`. A representative `build-release.py WINDOWS_LIMIT package build_docker` search retrieves the release-builder source at that revision. Final shell/Python syntax checks and `git diff --check` pass. Shared reference pins/indexes were not changed.

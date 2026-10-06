@@ -4,6 +4,8 @@ Run from `my2pg/`. The [task board](agent-tasks.md) and task worklogs identify i
 
 Rust 1.99.0 is pinned in `rust-toolchain.toml`, including rustfmt and Clippy. `bin/cargo` uses the coordinator-installed sibling `.toolchains/` runtime when present, otherwise the normal Cargo on PATH. Install the pinned toolchain through [official rustup](https://rustup.rs/) on another machine; generated toolchains, build outputs, credentials and per-run artifacts are ignored.
 
+For release archives with notices, operator docs and checksums, use `./bin/build-macos`, `./bin/build-linux`, or the experimental Windows PowerShell entry point. See [release build instructions](releases.md) for native/Docker prerequisites, CPU targets and Windows limitations.
+
 ```sh
 rtk run './bin/cargo build --locked'
 rtk run './bin/cargo fmt --all -- --check'

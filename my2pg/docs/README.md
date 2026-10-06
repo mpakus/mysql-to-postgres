@@ -19,6 +19,7 @@ Build `my2pg/` beside `pgloader/` as an independent Rust application. Keep MySQL
 | [Checklists](checklists.md) | Evidence required to finish tasks, milestones, and a release |
 | [Worklog](../worklog/README.md) | How to record progress and hand work between agents |
 | [Development](development.md) | Runnable build, offline validation and disposable database commands |
+| [Release builds](releases.md) | Linux/macOS archives, Docker export, experimental Windows compilation and checksums |
 
 ## Decisions proposed by this plan
 

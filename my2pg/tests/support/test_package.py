@@ -32,6 +32,11 @@ class PackageBoundaryTests(unittest.TestCase):
             "README.md",
             "LICENSE",
             "rust-toolchain.toml",
+            "bin/cargo",
+            "bin/build-release.py",
+            "bin/build-linux",
+            "bin/build-macos",
+            "bin/build-windows.ps1",
             "src/main.rs",
             "tests/integration.rs",
             "tests/support/test_package.py",
@@ -42,6 +47,7 @@ class PackageBoundaryTests(unittest.TestCase):
             "docs/architecture.md",
             "docs/config-and-cli.md",
             "docs/scope-and-compatibility.md",
+            "docs/releases.md",
             "docs/examples/mysql-to-postgres.toml",
         }
         self.assertTrue(required <= self.paths, f"missing package paths: {sorted(required - self.paths)}")
@@ -49,6 +55,8 @@ class PackageBoundaryTests(unittest.TestCase):
     def test_archive_excludes_internal_and_generated_material(self):
         forbidden = {
             "AGENTS.md",
+            "bin/reference-index.py",
+            "tests/support/test_reference_index.py",
             "docs/implementation-plan.md",
             "docs/agent-tasks.md",
             "docs/checklists.md",
