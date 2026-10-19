@@ -50,6 +50,9 @@ pub struct SourceColumn {
     pub column_type: String,
     pub nullable: bool,
     pub default: Option<String>,
+    /// Original character-default bytes before the metadata connection transcodes them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub default_bytes_hex: Option<String>,
     pub default_is_expression: bool,
     pub extra: String,
     pub charset: Option<String>,
@@ -591,6 +594,9 @@ pub struct IndexExpectation {
     pub columns: Vec<String>,
     #[serde(default)]
     pub expressions: Vec<Option<String>>,
+    /// Ordered mapped text columns for the explicit simple-config GIN replacement.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fulltext_columns: Option<Vec<String>>,
     pub unique: bool,
     pub primary: bool,
     pub descending: Vec<bool>,

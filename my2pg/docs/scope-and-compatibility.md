@@ -41,7 +41,7 @@ Also exclude source writes, inline source-view creation, arbitrary Lisp/Clojure 
 
 General stored routines, events, triggers, users/grants, partition layout translation, and SQL-view definitions are inventoried and reported for manual migration. In-scope tables are not advertised as preserving these behaviors. Unsupported table/index/column semantics block execution until explicitly overridden or acknowledged as omitted in configuration.
 
-FULLTEXT, SPATIAL index definitions, prefix indexes, MySQL collations, and storage options have no blanket PostgreSQL equivalent. v1 must detect them and support explicit omission or a reviewed target SQL replacement. A simple GIN index is not automatically equivalent to MySQL full-text search. Never silently convert a prefix UNIQUE index into a different uniqueness rule.
+FULLTEXT, SPATIAL index definitions, prefix indexes, MySQL collations, and storage options have no blanket PostgreSQL equivalent. v1 must detect them and require an explicit decision. FULLTEXT additionally supports the built-in `migration.fulltext = "simple_gin"` replacement: NULL-safe text concatenation in source key order with spaces, using PostgreSQL's fixed `simple` configuration. It emits a semantic-change warning and verifies the generated GIN definition; it does not preserve MySQL search semantics. Exact-object omission remains available. Other unsupported semantics require explicit omission or a reviewed replacement. Never silently convert a prefix UNIQUE index into a different uniqueness rule.
 
 ## Type and value contract
 
@@ -59,6 +59,7 @@ The planner resolves a `ColumnPlan` once. DDL, transforms, encoding, defaults, a
 | FLOAT / DOUBLE | `real` / `double precision` | Precision, finite extremes, explicit comparison policy |
 | CHAR/VARCHAR/TEXT | Preserve declared lengths where meaningful; target `varchar(n)`/`text` | Trailing spaces, multibyte lengths, empty vs NULL, collation caveats |
 | BINARY/VARBINARY/BLOB | `bytea`, retain every byte | NUL, all 256 byte values, padding, blobs larger than a batch limit |
+| Explicit CHAR/VARCHAR/TEXT → bytea | Preserve source bytes without decoding; character literal defaults require original-byte metadata | All 256 bytes, serial/range reads, charset override bypass, empty/NULL and inserted defaults |
 | DATE | `date`; invalid/zero dates reject by default | Zero month/day, partial-zero dates, invalid calendar dates, NULL |
 | DATETIME(fsp) | `timestamp(fsp) without time zone` | Preserve wall time, fractions, DST edge values; explicit cast required for timezone interpretation |
 | TIMESTAMP(fsp) | Read with MySQL session timezone UTC; `timestamptz(fsp)` | UTC instants independent of machine timezone; fractions |

@@ -402,6 +402,66 @@ fn codes(result: Result<MigrationPlan, PlanError>) -> Vec<String> {
 }
 
 #[test]
+fn text_to_bytea_uses_raw_projection_and_original_default_bytes() {
+    let (mut config, mut source, target) = inputs();
+    let mut raw = column(&source, "raw`bytes", "varchar");
+    raw.column_type = "varchar(32)".into();
+    raw.character_length = Some(32);
+    raw.charset = Some("latin1".into());
+    raw.default = Some("€ÿ".into());
+    raw.default_bytes_hex = Some("80FF".into());
+    source.tables[0].columns.push(raw);
+    config.cast.push(CastRule {
+        source_table: Some("CamelCase".into()),
+        source_column: Some("raw`bytes".into()),
+        target_type: Some("bytea".into()),
+        transform: Some("binary-to-bytea".into()),
+        charset: Some("utf8mb4".into()),
+        ..Default::default()
+    });
+    for (decoded, hex, expected) in [
+        ("€ÿ", "80FF", r"E'\\x80ff'"),
+        ("", "", r"E'\\x'"),
+        ("0x41", "30783431", r"E'\\x30783431'"),
+        ("\0\t\\'", "00095c27", r"E'\\x00095c27'"),
+    ] {
+        let raw = &mut source.tables[0].columns[1];
+        raw.default = Some(decoded.into());
+        raw.default_bytes_hex = Some(hex.into());
+        let plan = build(&config, &source, &target).unwrap();
+        assert_eq!(
+            plan.tables[0].columns[1].default_sql.as_deref(),
+            Some(expected)
+        );
+        assert_eq!(
+            crate::mysql::select_sql("source_fixture", &plan.tables[0]).unwrap(),
+            "SELECT `ID`,CAST(`raw``bytes` AS BINARY) FROM `source_fixture`.`CamelCase`"
+        );
+    }
+    for bad_hex in [None, Some("0"), Some("GG")] {
+        source.tables[0].columns[1].default_bytes_hex = bad_hex.map(str::to_string);
+        assert!(codes(build(&config, &source, &target)).contains(&"DEFAULT_UNSUPPORTED".into()));
+    }
+    source.tables[0].columns[1].default = None;
+    source.tables[0].columns[1].default_bytes_hex = None;
+    assert!(
+        build(&config, &source, &target).unwrap().tables[0].columns[1]
+            .default_sql
+            .is_none()
+    );
+    // Ordinary text defaults continue to use decoded metadata.
+    source.tables[0].columns[1].default = Some("€ÿ".into());
+    source.tables[0].columns[1].default_bytes_hex = Some("80FF".into());
+    config.cast.clear();
+    assert_eq!(
+        build(&config, &source, &target).unwrap().tables[0].columns[1]
+            .default_sql
+            .as_deref(),
+        Some("E'€ÿ'")
+    );
+}
+
+#[test]
 fn basic_plan_is_deterministic_qualified_and_preserves_source_names() {
     let (config, source, mut target) = inputs();
     target.tables.push(TargetTable {
@@ -663,6 +723,158 @@ fn functional_index_needs_explicit_target_expression_or_omission() {
             .iter()
             .any(|index| index.name.contains("email_lower_unique"))
     );
+}
+
+#[test]
+fn fulltext_simple_gin_is_explicit_mapped_null_safe_and_omittable() {
+    let (mut config, mut source, target) = inputs();
+    for (offset, (name, kind)) in [("Title", "varchar"), ("Body \" (x)", "text")]
+        .into_iter()
+        .enumerate()
+    {
+        let mut text = column(&source, name, kind);
+        text.ordinal = offset as u32 + 2;
+        text.character_length = (kind == "varchar").then_some(100);
+        source.tables[0].columns.push(text);
+    }
+    for (name, columns) in [
+        ("title_only", vec!["Title"]),
+        ("all_text", vec!["Title", "Body \" (x)"]),
+    ] {
+        source.tables[0].indexes.push(SourceIndex {
+            name: name.into(),
+            kind: "FULLTEXT".into(),
+            primary: false,
+            unique: false,
+            parts: columns
+                .into_iter()
+                .map(|name| IndexPart {
+                    column: Some(name.into()),
+                    expression: None,
+                    prefix_length: None,
+                    descending: false,
+                })
+                .collect(),
+        });
+    }
+    assert!(codes(build(&config, &source, &target)).contains(&"INDEX_UNSUPPORTED".into()));
+    config.migration.fulltext = FulltextPolicy::SimpleGin;
+    config.migration.identifiers = IdentifierPolicy::Downcase;
+    config.tables.rename.clear();
+    config.target.schema = "search schema".into();
+    config.tables.rename.push(TableRename {
+        source: "CamelCase".into(),
+        target: "search rows".into(),
+        schema: None,
+    });
+    let plan = build(&config, &source, &target).unwrap();
+    let indexes: Vec<_> = plan.tables[0]
+        .structure
+        .indexes
+        .iter()
+        .filter(|index| index.fulltext_columns.is_some())
+        .collect();
+    assert_eq!(indexes.len(), 2);
+    assert_eq!(indexes[0].fulltext_columns.as_ref().unwrap(), &["title"]);
+    assert_eq!(
+        indexes[1].fulltext_columns.as_ref().unwrap(),
+        &["title", "body \" (x)"]
+    );
+    for index in indexes {
+        assert!(index.columns.is_empty() && !index.unique && !index.primary);
+        assert_eq!(index.expressions.len(), 1);
+        assert_eq!(index.descending, [false]);
+    }
+    let sql = &plan
+        .ddl
+        .iter()
+        .find(|step| step.object.ends_with(".all_text"))
+        .unwrap()
+        .sql;
+    assert!(
+        sql.contains("ON \"search schema\".\"search rows\" USING gin"),
+        "{sql}"
+    );
+    assert!(sql.contains("COALESCE(\"title\"::pg_catalog.text, ''::pg_catalog.text) || ' '::pg_catalog.text || COALESCE(\"body \"\" (x)\"::pg_catalog.text"), "{sql}");
+    assert_eq!(
+        plan.diagnostics
+            .iter()
+            .filter(|item| item.code == "FULLTEXT_REPLACED")
+            .count(),
+        2
+    );
+    config.overrides.push(ObjectOverride {
+        object: "source_fixture.CamelCase.all_text".into(),
+        omit: true,
+        target_expression: None,
+        target_sql: None,
+        materialize: None,
+    });
+    let omitted = build(&config, &source, &target).unwrap();
+    assert!(
+        omitted
+            .exclusions
+            .contains(&"source_fixture.CamelCase.all_text".into())
+    );
+    assert!(
+        !omitted
+            .ddl
+            .iter()
+            .any(|step| step.object.ends_with(".all_text"))
+    );
+}
+
+#[test]
+fn fulltext_does_not_coerce_numeric_keys_or_accept_unsupported_key_shapes() {
+    let (mut config, mut source, target) = inputs();
+    config.migration.fulltext = FulltextPolicy::SimpleGin;
+    let mut text = column(&source, "body", "text");
+    text.ordinal = 2;
+    source.tables[0].columns.push(text);
+    let ordinary = SourceIndex {
+        name: "fulltext".into(),
+        kind: "FULLTEXT".into(),
+        primary: false,
+        unique: false,
+        parts: vec![IndexPart {
+            column: Some("body".into()),
+            expression: None,
+            prefix_length: None,
+            descending: false,
+        }],
+    };
+    let mut invalid = vec![];
+    let mut numeric = ordinary.clone();
+    numeric.parts[0].column = Some("ID".into());
+    invalid.push(numeric);
+    let mut missing = ordinary.clone();
+    missing.parts[0].column = Some("missing".into());
+    invalid.push(missing);
+    let mut prefixed = ordinary.clone();
+    prefixed.parts[0].prefix_length = Some(10);
+    invalid.push(prefixed);
+    let mut descending = ordinary.clone();
+    descending.parts[0].descending = true;
+    invalid.push(descending);
+    let mut unique = ordinary.clone();
+    unique.unique = true;
+    invalid.push(unique);
+    let mut primary = ordinary.clone();
+    primary.primary = true;
+    invalid.push(primary);
+    let mut functional = ordinary.clone();
+    functional.parts[0].expression = Some("lower(body)".into());
+    invalid.push(functional);
+    let mut empty = ordinary.clone();
+    empty.parts.clear();
+    invalid.push(empty);
+    for index in invalid {
+        source.tables[0].indexes = vec![index];
+        assert!(
+            codes(build(&config, &source, &target))
+                .contains(&"FULLTEXT_MAPPING_UNSUPPORTED".into())
+        );
+    }
 }
 
 #[test]

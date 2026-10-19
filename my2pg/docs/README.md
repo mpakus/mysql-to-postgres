@@ -20,6 +20,7 @@ Build `my2pg/` beside `pgloader/` as an independent Rust application. Keep MySQL
 | [Worklog](../worklog/README.md) | How to record progress and hand work between agents |
 | [Development](development.md) | Runnable build, offline validation and disposable database commands |
 | [Release builds](releases.md) | Linux/macOS archives, Docker export, experimental Windows compilation and checksums |
+| [Strangler pgloader patches](strangler-pgloader.md) | Built-in Rust parity, FULLTEXT replacement and configuration |
 
 ## Decisions proposed by this plan
 

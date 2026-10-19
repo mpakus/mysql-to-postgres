@@ -349,6 +349,7 @@ pub async fn inspect(conn: &mut Conn) -> Result<SourceCatalog, SourceError> {
             let generation: Option<String> = field(&column, 9, &name)?;
             let data_type: String = field(&column, 2, &name)?;
             let mut default: Option<String> = field(&column, 5, &name)?;
+            let mut default_bytes_hex = None;
             let default_is_expression = extra.contains("DEFAULT_GENERATED")
                 || (matches!(data_type.as_str(), "timestamp" | "datetime")
                     && default.as_deref().is_some_and(|value| {
@@ -372,7 +373,7 @@ pub async fn inspect(conn: &mut Conn) -> Result<SourceCatalog, SourceError> {
                 let projection = if binary_default {
                     format!("HEX({native_default})")
                 } else {
-                    format!("CONVERT({native_default} USING utf8mb4)")
+                    format!("CONVERT({native_default} USING utf8mb4),HEX({native_default})")
                 };
                 let query = format!(
                     "SELECT {projection} FROM {}.{} AS my2pg_default_source LIMIT 1",
@@ -397,7 +398,13 @@ pub async fn inspect(conn: &mut Conn) -> Result<SourceCatalog, SourceError> {
                     }
                 };
                 let value = field::<Option<String>>(&row, 0, &context)?
-                    .ok_or(SourceError::Metadata(context))?;
+                    .ok_or_else(|| SourceError::Metadata(context.clone()))?;
+                if !binary_default {
+                    default_bytes_hex = Some(
+                        field::<Option<String>>(&row, 1, &context)?
+                            .ok_or(SourceError::Metadata(context))?,
+                    );
+                }
                 default = Some(if binary_default {
                     format!("0x{value}")
                 } else {
@@ -411,6 +418,7 @@ pub async fn inspect(conn: &mut Conn) -> Result<SourceCatalog, SourceError> {
                 column_type: field(&column, 3, &name)?,
                 nullable: field::<String>(&column, 4, &name)? == "YES",
                 default,
+                default_bytes_hex,
                 default_is_expression,
                 extra,
                 charset: field(&column, 7, &name)?,
@@ -565,7 +573,10 @@ pub fn select_sql(database: &str, table: &TablePlan) -> Result<String, SourceErr
                 ValueKind::Geometry => {
                     format!("CONCAT('SRID=',ST_SRID({name}),';',ST_AsText({name}))")
                 }
-                ValueKind::Text | ValueKind::Enum if column.charset.is_some() => {
+                ValueKind::Text | ValueKind::Enum | ValueKind::Binary
+                    if column.charset.is_some() =>
+                {
+                    // Explicit bytea casts must bypass server-side text transcoding too.
                     format!("CAST({name} AS BINARY)")
                 }
                 _ => name,

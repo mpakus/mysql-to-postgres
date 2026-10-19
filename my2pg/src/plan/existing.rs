@@ -517,7 +517,13 @@ fn index_shape(parts: &[&TargetIndexPart], expected: &IndexExpectation) -> bool 
     !parts.is_empty()
         && parts.len() == expected.expressions.len()
         && parts.iter().all(|p| {
-            p.immediate
+            p.method
+                == if expected.fulltext_columns.is_some() {
+                    "gin"
+                } else {
+                    "btree"
+                }
+                && p.immediate
                 && p.constraint_deferrable != Some(true)
                 && p.constraint_initially_deferred != Some(true)
                 && p.is_unique == expected.unique
@@ -527,14 +533,63 @@ fn index_shape(parts: &[&TargetIndexPart], expected: &IndexExpectation) -> bool 
             .iter()
             .filter_map(|p| p.column_name.as_ref())
             .eq(expected.columns.iter())
-        && parts
-            .iter()
-            .map(|part| part.expression.as_deref())
-            .eq(expected.expressions.iter().map(Option::as_deref))
-        && parts
-            .iter()
-            .filter_map(|p| p.descending)
-            .eq(expected.descending.iter().copied())
+        && if let Some(columns) = &expected.fulltext_columns {
+            parts.len() == 1
+                && parts[0]
+                    .expression
+                    .as_deref()
+                    .is_some_and(|expression| super::fulltext::matches(expression, columns))
+                && expected.descending == [false]
+        } else {
+            parts
+                .iter()
+                .map(|part| part.expression.as_deref())
+                .eq(expected.expressions.iter().map(Option::as_deref))
+                && parts
+                    .iter()
+                    .filter_map(|p| p.descending)
+                    .eq(expected.descending.iter().copied())
+        }
+}
+
+fn fulltext_index(
+    parts: &[&TargetIndexPart],
+    observed: &TargetTableObserved,
+    selected: (&str, &str),
+    expected: &IndexExpectation,
+) -> bool {
+    expected.fulltext_columns.is_some()
+        && parts.len() == 1
+        && index_shape(parts, expected)
+        && parts.iter().all(|p| {
+            p.index_oid > 0
+                && p.table_oid == observed.oid
+                && p.table_schema == selected.0
+                && p.table_name == selected.1
+                && p.index_schema == selected.0
+                && p.ordinal == 1
+                && p.valid
+                && p.ready
+                && p.live
+                && p.immediate
+                && !p.is_unique
+                && !p.is_primary
+                && !p.is_exclusion
+                && !p.nulls_not_distinct
+                && p.predicate.is_none()
+                && !p.included
+                && p.column_ordinal == 0
+                && p.column_name.is_none()
+                && p.descending.is_none()
+                && p.nulls_first.is_none()
+                && p.constraint_name.is_none()
+                && p.constraint_deferrable.is_none()
+                && p.constraint_initially_deferred.is_none()
+                && p.operator_class_schema.as_deref() == Some("pg_catalog")
+                && p.operator_class_name.as_deref() == Some("tsvector_ops")
+                && p.default_operator_class == Some(true)
+                && p.collation_oid.is_none()
+        })
 }
 fn recreatable_constraint_kind(kind: &str) -> bool {
     matches!(kind, "p" | "u" | "f" | "c" | "x" | "n")
@@ -607,7 +662,16 @@ fn recreate_inventory(observed: &TargetTableObserved, plan: &mut MigrationPlan) 
 fn bind_indexes(observed: &TargetTableObserved, table: &mut TablePlan, plan: &mut MigrationPlan) {
     let groups = indexes(observed);
     for parts in groups.values() {
-        if !basic_index(parts, observed, (&table.target_schema, &table.target_name)) {
+        if !basic_index(parts, observed, (&table.target_schema, &table.target_name))
+            && !table.structure.indexes.iter().any(|expected| {
+                fulltext_index(
+                    parts,
+                    observed,
+                    (&table.target_schema, &table.target_name),
+                    expected,
+                )
+            })
+        {
             error(
                 plan,
                 "TARGET_INDEX_UNSUPPORTED",
@@ -620,7 +684,13 @@ fn bind_indexes(observed: &TargetTableObserved, table: &mut TablePlan, plan: &mu
     for expected in &mut table.structure.indexes {
         let found = groups.iter().find(|(oid, parts)| {
             !used.contains(*oid)
-                && basic_index(parts, observed, (&table.target_schema, &table.target_name))
+                && (basic_index(parts, observed, (&table.target_schema, &table.target_name))
+                    || fulltext_index(
+                        parts,
+                        observed,
+                        (&table.target_schema, &table.target_name),
+                        expected,
+                    ))
                 && index_shape(parts, expected)
         });
         if let Some((oid, parts)) = found {

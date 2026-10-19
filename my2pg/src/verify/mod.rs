@@ -461,13 +461,27 @@ async fn verify_structure(
         let expressions: Vec<Option<String>> = rows.iter().map(|row| row.get(6)).collect();
         let correct = !rows.is_empty()
             && columns == expected.columns
-            && expressions == expected.expressions
+            && if let Some(columns) = &expected.fulltext_columns {
+                expressions.len() == 1
+                    && expressions[0].as_deref().is_some_and(|expression| {
+                        crate::plan::fulltext::matches(expression, columns)
+                    })
+            } else {
+                expressions == expected.expressions
+            }
             && descending == expected.descending
             && rows.iter().all(|row| {
                 row.get::<_, bool>(1) == expected.unique
                     && row.get::<_, bool>(2) == expected.primary
-                    && row.get::<_, String>(4) == "btree"
+                    && row.get::<_, String>(4)
+                        == if expected.fulltext_columns.is_some() {
+                            "gin"
+                        } else {
+                            "btree"
+                        }
                     && row.get::<_, bool>(5)
+                    && (expected.fulltext_columns.is_none()
+                        || row.get::<_, Option<bool>>(7) == Some(true))
             });
         if !correct {
             differences.push(format!(

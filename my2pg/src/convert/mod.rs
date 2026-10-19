@@ -302,6 +302,7 @@ fn represent<'a>(
             | "remove-null-characters"
             | "right-trim"
             | "byte-vector-to-bytea"
+            | "binary-to-bytea"
             | "bytes-to-pg-bytea"
             | "hex-to-bytea"
             | "set-to-array"
@@ -622,6 +623,7 @@ pub fn transformation_applied(
         Some(
             "bits-to-boolean"
             | "byte-vector-to-bytea"
+            | "binary-to-bytea"
             | "bytes-to-pg-bytea"
             | "set-to-array"
             | "year-to-integer"

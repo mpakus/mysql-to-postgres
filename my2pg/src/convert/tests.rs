@@ -481,7 +481,11 @@ fn jsonb_numeric_domain_is_checked_without_expanding_exponents() {
 
 #[test]
 fn all_named_transform_effects_distinguish_semantic_changes_from_representation() {
-    for name in ["byte-vector-to-bytea", "bytes-to-pg-bytea"] {
+    for name in [
+        "binary-to-bytea",
+        "byte-vector-to-bytea",
+        "bytes-to-pg-bytea",
+    ] {
         let mut binary = column(ValueKind::Binary, "bytea");
         binary.transform = Some(name.into());
         for bytes in [vec![], vec![0, 255]] {
@@ -531,6 +535,7 @@ fn all_named_transform_effects_distinguish_semantic_changes_from_representation(
         "remove-null-characters",
         "right-trim",
         "byte-vector-to-bytea",
+        "binary-to-bytea",
         "bytes-to-pg-bytea",
         "hex-to-bytea",
         "set-to-array",

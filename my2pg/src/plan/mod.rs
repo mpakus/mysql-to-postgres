@@ -4,6 +4,7 @@ use regex::Regex;
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
 mod existing;
+pub(crate) mod fulltext;
 mod labels;
 
 #[derive(Debug, thiserror::Error)]
@@ -363,10 +364,20 @@ fn default_sql(column: &SourceColumn, plan: &ColumnPlan) -> Result<Option<String
                 column.data_type.to_ascii_lowercase().as_str(),
                 "binary" | "varbinary" | "tinyblob" | "blob" | "mediumblob" | "longblob"
             );
-            let mut bytes = if source_binary {
-                let hex = value
-                    .strip_prefix("0x")
-                    .ok_or("binary catalog default requires hex metadata")?;
+            let source_text = matches!(
+                column.data_type.to_ascii_lowercase().as_str(),
+                "char" | "varchar" | "tinytext" | "text" | "mediumtext" | "longtext"
+            );
+            let mut bytes = if source_binary || source_text {
+                let hex = if source_binary {
+                    value
+                        .strip_prefix("0x")
+                        .ok_or("binary catalog default requires hex metadata")?
+                } else {
+                    column.default_bytes_hex.as_deref().ok_or(
+                        "text-to-bytea default requires original bytes; inspect the source again",
+                    )?
+                };
                 if !hex.len().is_multiple_of(2) || !hex.bytes().all(|byte| byte.is_ascii_hexdigit())
                 {
                     return Err("invalid binary catalog default".into());
@@ -428,7 +439,7 @@ fn transform_compatible(column: &ColumnPlan) -> bool {
             matches!(column.kind, ValueKind::Text | ValueKind::Enum)
         }
         Some("remove-null-characters" | "right-trim") => column.kind == ValueKind::Text,
-        Some("byte-vector-to-bytea" | "bytes-to-pg-bytea" | "hex-to-bytea") => {
+        Some("binary-to-bytea" | "byte-vector-to-bytea" | "bytes-to-pg-bytea" | "hex-to-bytea") => {
             column.kind == ValueKind::Binary
         }
         Some("set-to-array") => column.kind == ValueKind::Set && !column.set_labels.is_empty(),
@@ -1353,6 +1364,29 @@ fn generate_ddl(
                     plan.exclusions.push(object);
                     continue;
                 }
+                let fulltext_columns = if index.kind == "FULLTEXT"
+                    && config.migration.fulltext == FulltextPolicy::SimpleGin
+                {
+                    let columns = fulltext::columns(index, table);
+                    if columns.is_none() {
+                        plan.diagnostics.push(diagnostic(
+                            "FULLTEXT_MAPPING_UNSUPPORTED",
+                            &object,
+                            "simple_gin requires nonunique, nonprimary, ordered plain text columns without prefixes or descending keys",
+                            Severity::Error,
+                        ));
+                        continue;
+                    }
+                    plan.diagnostics.push(diagnostic(
+                        "FULLTEXT_REPLACED",
+                        &object,
+                        "explicit simple_gin replacement: MySQL tokenization, stopwords, ranking and MATCH syntax are not preserved",
+                        Severity::Warning,
+                    ));
+                    columns
+                } else {
+                    None
+                };
                 let expression_count = index
                     .parts
                     .iter()
@@ -1373,7 +1407,7 @@ fn generate_ddl(
                     ));
                     continue;
                 }
-                if index.kind != "BTREE"
+                if (index.kind != "BTREE" && fulltext_columns.is_none())
                     || expression_count > 1
                     || (expression_count > 0 && index.primary)
                     || index.parts.iter().any(|part| {
@@ -1386,7 +1420,11 @@ fn generate_ddl(
                     plan.diagnostics.push(diagnostic(
                         "INDEX_UNSUPPORTED",
                         &object,
-                        "index semantics require explicit omission or reviewed replacement",
+                        if index.kind == "FULLTEXT" {
+                            "FULLTEXT requires migration.fulltext = \"simple_gin\" for the explicit PostgreSQL replacement, or an exact-object omission"
+                        } else {
+                            "index semantics require explicit omission or reviewed replacement"
+                        },
                         Severity::Error,
                     ));
                     continue;
@@ -1419,6 +1457,7 @@ fn generate_ddl(
                     ));
                     continue;
                 };
+                let fulltext_expression = fulltext_columns.as_deref().map(fulltext::expression);
                 let index_name = stable_name(
                     &format!(
                         "idx_{}_{}_{}",
@@ -1451,7 +1490,12 @@ fn generate_ddl(
                         Severity::Error,
                     ));
                 }
-                let sql = if index.primary {
+                let sql = if let Some(expression) = &fulltext_expression {
+                    format!(
+                        "CREATE INDEX {} ON {name} USING gin ({expression});",
+                        quote_identifier(&index_name)
+                    )
+                } else if index.primary {
                     format!(
                         "ALTER TABLE {name} ADD CONSTRAINT {} PRIMARY KEY ({});",
                         quote_identifier(&index_name),
@@ -1467,31 +1511,44 @@ fn generate_ddl(
                 };
                 expectations.indexes.push(IndexExpectation {
                     name: index_name,
-                    columns: index
-                        .parts
-                        .iter()
-                        .filter_map(|part| {
-                            part.column.as_ref().and_then(|source_name| {
-                                table
-                                    .columns
-                                    .iter()
-                                    .find(|column| &column.source_name == source_name)
-                                    .map(|column| column.target_name.clone())
+                    columns: if fulltext_columns.is_some() {
+                        vec![]
+                    } else {
+                        index
+                            .parts
+                            .iter()
+                            .filter_map(|part| {
+                                part.column.as_ref().and_then(|source_name| {
+                                    table
+                                        .columns
+                                        .iter()
+                                        .find(|column| &column.source_name == source_name)
+                                        .map(|column| column.target_name.clone())
+                                })
                             })
-                        })
-                        .collect(),
-                    expressions: index
-                        .parts
-                        .iter()
-                        .map(|part| {
-                            part.expression
-                                .as_ref()
-                                .map(|_| target_expression.unwrap().to_owned())
-                        })
-                        .collect(),
+                            .collect()
+                    },
+                    expressions: if let Some(expression) = fulltext_expression {
+                        vec![Some(expression)]
+                    } else {
+                        index
+                            .parts
+                            .iter()
+                            .map(|part| {
+                                part.expression
+                                    .as_ref()
+                                    .map(|_| target_expression.unwrap().to_owned())
+                            })
+                            .collect()
+                    },
+                    fulltext_columns: fulltext_columns.clone(),
                     unique: index.unique || index.primary,
                     primary: index.primary,
-                    descending: index.parts.iter().map(|part| part.descending).collect(),
+                    descending: if fulltext_columns.is_some() {
+                        vec![false]
+                    } else {
+                        index.parts.iter().map(|part| part.descending).collect()
+                    },
                 });
                 if creates {
                     plan.ddl.push(DdlStep {

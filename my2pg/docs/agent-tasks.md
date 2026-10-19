@@ -108,6 +108,10 @@ The coordinator's 2026-10-02 policy increment rejects `data_only` with default `
 
 ## Execution waves
 
+2026-10-08 T17 follow-up: Strangler's FULLTEXT replacement is built in as explicit `migration.fulltext = "simple_gin"`, with source-order NULL-safe text, deterministic names, GIN verification and compatible existing-target binding. It passes focused unit and real CLI tests on MySQL 8.4.11/PostgreSQL 16.15; the new native case is registered in the matrix inventory. T22's remaining version/platform gates are unchanged. See [Strangler loader built-ins](../worklog/2026-10-08-strangler-loader-builtins.md).
+
+2026-10-19 T05/T10/T16 follow-up: Strangler's new text-to-bytea patches are implemented in the shared source reader/default planner, including the `binary-to-bytea` transform spelling. The real CLI regression checks original bytes and defaults with serial/parallel readers. See [binary patch parity](../worklog/2026-10-19-strangler-binary-parity.md) for validation and remaining matrix limits.
+
 | Wave | Active work, excluding the integrator | Join condition |
 | --- | --- | --- |
 | 0 | I performs T01 | Build and shared contracts available |

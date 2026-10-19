@@ -34,6 +34,9 @@ max_row_bytes = 16777216
 on_row_error = "stop"
 max_rejected_rows = 0
 reset_sequences = true
+# Opt in to Strangler's NULL-safe PostgreSQL simple-config GIN replacement.
+# MySQL FULLTEXT search behavior and MATCH syntax are not preserved.
+fulltext = "require_decision" # choose "simple_gin" to enable
 
 [tables]
 include = []

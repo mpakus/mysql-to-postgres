@@ -23,6 +23,7 @@ See [mysql-to-postgres.toml](examples/mysql-to-postgres.toml). The configuration
 | `migration.batch_rows`, `batch_bytes`, `queue_batches`, `memory_bytes`, `max_row_bytes` | Positive bounded values validated together; memory means the retained application-data budget, not total process RSS |
 | `migration.on_row_error`, `max_rejected_rows` | `stop` by default; `reject` requires a positive explicit limit; zero is valid only with stop |
 | `migration.reset_sequences` | Default true for full/schema-only; explicit choice for data-only |
+| `migration.fulltext` | Default `require_decision`; explicit `simple_gin` replaces selected MySQL FULLTEXT indexes with NULL-safe PostgreSQL `simple` GIN expressions |
 | `tables.include`, `exclude` | Exact source names; empty include means all base tables, excludes win |
 | `tables.include_regex`, `exclude_regex` | Explicit regex lists; unsupported regex features fail instead of changing meaning |
 | `[[tables.rename]]` | Exact source identity to target table/schema mapping; use the same mapping for all references |
@@ -34,6 +35,8 @@ See [mysql-to-postgres.toml](examples/mysql-to-postgres.toml). The configuration
 | `[report]` | Output directory, console format, progress policy; one fresh directory per run |
 
 CLI overrides are limited to operational controls such as output, verbosity, and worker limits. They take precedence over TOML and appear in the resolved plan. Do not add three competing ways to specify a cast. Set each endpoint through exactly one `url_env` or `url_file` reference; URL files must be owner-private (`chmod 600` on Unix). A target may also name a PostgreSQL `passfile`. Missing credentials never fall back to a different database user silently. Implicit legacy MySQL option-file discovery is outside v1.
+
+A column cast to `bytea` preserves original MySQL text bytes and literal-default bytes without charset decoding, including when a cast has a charset override. No transform is necessary; `binary-to-bytea`, `byte-vector-to-bytea` and `bytes-to-pg-bytea` are equivalent byte-preserving spellings. Use `hex-to-bytea` only when the source contains textual hex to decode. See [the Strangler patch mapping](strangler-pgloader.md) for an example and verification limits.
 
 Offline and runtime memory validation share the checked reservation calculation: one data pipeline requires `W + (queue_batches + 2) × B`, where `B` includes batch bytes and row positions, and `W` includes raw/converted/encoded row workspaces and bounded encoder scratch. The extra two batches cover active COPY/recovery and producer filling or blocked send. Individual reservations must fit `u32` and the total budget must fit semaphore capacity. Schema-only requires no COPY reservation. The current runner admits bounded parallel table workers for frozen sources, caps admission by this budget, and reports reductions; single-snapshot mode retains one original reader plus its separately admitted control connection. T13 shutdown/resource acceptance includes the real stalled-filesystem artifact-worker test documented in the checklist. This budget does not bound driver/TLS/allocator overhead or process RSS.
 
@@ -48,6 +51,32 @@ For example, PostgreSQL deparses `lower(email)` over a `varchar` key as `lower((
 object = "source.users.email_lower_unique"
 target_expression = "lower((email)::text)"
 ```
+
+## Built-in FULLTEXT replacement
+
+The Strangler FULLTEXT fix is available without handwritten SQL or a pgloader patch:
+
+```toml
+[migration]
+fulltext = "simple_gin"
+```
+
+This applies to selected FULLTEXT indexes on columns mapped to PostgreSQL text/varchar/char. Each column is cast to text and coalesced to empty text, then concatenated in source key order with spaces. Destination names follow the resolved identifier/table/schema mappings; index names remain deterministic. An exact-object `omit = true` override still wins. Nontext casts, empty keys, expression/prefix/descending parts and unique/primary FULLTEXT definitions block planning.
+
+Every replacement appears as `FULLTEXT_REPLACED` in the plan. It uses PostgreSQL's `pg_catalog.simple` configuration; MySQL tokenization, stopwords, minimum word lengths, ranking and `MATCH ... AGAINST` syntax are not preserved. The default requires a decision before target writes. The strict `.load` importer does not infer this choice; add it to the imported TOML.
+
+Use the same expression and search configuration in PostgreSQL queries. For an index on `name, description`:
+
+```sql
+SELECT *
+FROM mysql.products
+WHERE pg_catalog.to_tsvector(
+  'pg_catalog.simple'::pg_catalog.regconfig,
+  coalesce(name::text, '') || ' ' || coalesce(description::text, '')
+) @@ pg_catalog.to_tsquery('pg_catalog.simple', 'lamp');
+```
+
+This follows PostgreSQL's [expression-index and NULL handling requirements](https://www.postgresql.org/docs/16/textsearch-tables.html). Schema verification checks the ordered coalesced columns, separators, configuration, GIN method, validity and built-in operator class. Compatible existing GIN indexes can be bound during data-only planning; drift and unrelated GIN semantics block execution. See [Strangler patch parity](strangler-pgloader.md).
 
 ## Strict pgloader importer
 

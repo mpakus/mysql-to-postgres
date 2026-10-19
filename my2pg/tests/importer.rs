@@ -32,6 +32,17 @@ fn assert_error(text: &str, code: &str) {
 }
 
 #[test]
+fn strangler_binary_to_bytea_alias_imports_as_a_byte_preserving_cast() {
+    let imported = cfg("CAST column orders.cc_number to bytea using binary-to-bytea");
+    let cast = &imported.config.cast[0];
+    assert_eq!(cast.source_table.as_deref(), Some("orders"));
+    assert_eq!(cast.source_column.as_deref(), Some("cc_number"));
+    assert_eq!(cast.target_type.as_deref(), Some("bytea"));
+    assert_eq!(cast.transform.as_deref(), Some("binary-to-bytea"));
+    config::validate(&imported.config).unwrap();
+}
+
+#[test]
 fn default_semantics_need_explicit_review_and_schema_never_defaults_to_public() {
     let options = ImportOptions {
         target_schema: Some("legacy".into()),

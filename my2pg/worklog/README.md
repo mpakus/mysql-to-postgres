@@ -14,6 +14,9 @@ For a contract change, add a short decision section: old behavior, new behavior,
 
 ## Entries
 
+- [2026-10-19 — Strangler raw text-to-bytea and default preservation](2026-10-19-strangler-binary-parity.md)
+- [2026-10-08 — Strangler loader parity and built-in FULLTEXT mapping](2026-10-08-strangler-loader-builtins.md)
+
 - [2026-10-01 — source analysis and rewrite planning](2026-10-01-analysis.md)
 - [2026-10-01 — XERJ and reference coding setup](2026-10-01-reference-coding.md)
 - [2026-10-01 — current reference snapshot refresh](2026-10-01-reference-refresh.md)

@@ -525,6 +525,7 @@ pub const TRANSFORMS: &[&str] = &[
     "remove-null-characters",
     "right-trim",
     "byte-vector-to-bytea",
+    "binary-to-bytea",
     "bytes-to-pg-bytea",
     "hex-to-bytea",
     "set-to-array",
@@ -1302,6 +1303,23 @@ mod tests {
             let diagnostic = config(&format!("[migration]\n{extra}")).unwrap_err();
             assert_eq!(diagnostic.field, "migration.memory_bytes");
         }
+    }
+
+    #[test]
+    fn fulltext_replacement_is_explicit_and_strict() {
+        assert_eq!(
+            config("").unwrap().migration.fulltext,
+            FulltextPolicy::RequireDecision
+        );
+        assert_eq!(
+            config("[migration]\nfulltext='simple_gin'\n")
+                .unwrap()
+                .migration
+                .fulltext,
+            FulltextPolicy::SimpleGin
+        );
+        assert!(config("[migration]\nfulltext='english'\n").is_err());
+        assert!(config("[migration]\nfulltext=true\n").is_err());
     }
 
     #[test]

@@ -24,6 +24,7 @@ include = [
     "/docs/architecture.md",
     "/docs/config-and-cli.md",
     "/docs/scope-and-compatibility.md",
+    "/docs/strangler-pgloader.md",
     "/docs/releases.md",
     "/docs/examples/**",
     "/README.md",

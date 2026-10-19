@@ -28,6 +28,7 @@ BUNDLE_FILES = (
     "README.md", "LICENSE", "THIRD-PARTY-NOTICES.md",
     "docs/architecture.md", "docs/config-and-cli.md",
     "docs/scope-and-compatibility.md", "docs/releases.md",
+    "docs/strangler-pgloader.md",
     "docs/examples/mysql-to-postgres.toml", "docs/examples/pgloader-subset.load",
 )
 

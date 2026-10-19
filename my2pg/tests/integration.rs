@@ -15,6 +15,8 @@ mod t10_enum_metadata;
 mod t10_mysql_projection;
 #[path = "cases/t10_set_verification.rs"]
 mod t10_set_verification;
+#[path = "cases/t10_text_bytea.rs"]
+mod t10_text_bytea;
 #[path = "cases/t10_values.rs"]
 mod t10_values;
 #[path = "cases/t11_catalog.rs"]
@@ -195,6 +197,8 @@ mod t19_views_hooks;
 mod t16_import_native;
 #[path = "cases/t17_check_override.rs"]
 mod t17_check_override;
+#[path = "cases/t17_fulltext.rs"]
+mod t17_fulltext;
 #[path = "cases/t17_generated_policy.rs"]
 mod t17_generated_policy;
 #[path = "cases/t17_index_expression.rs"]

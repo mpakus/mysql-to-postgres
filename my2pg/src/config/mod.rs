@@ -117,6 +117,14 @@ pub enum RowErrorPolicy {
     Reject,
 }
 
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum FulltextPolicy {
+    #[default]
+    RequireDecision,
+    SimpleGin,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct MigrationOptions {
@@ -133,6 +141,7 @@ pub struct MigrationOptions {
     pub on_row_error: RowErrorPolicy,
     pub max_rejected_rows: u64,
     pub reset_sequences: bool,
+    pub fulltext: FulltextPolicy,
     pub rows_per_range: u64,
     pub max_key_span: Option<u64>,
 }
@@ -153,6 +162,7 @@ impl Default for MigrationOptions {
             on_row_error: RowErrorPolicy::Stop,
             max_rejected_rows: 0,
             reset_sequences: true,
+            fulltext: FulltextPolicy::RequireDecision,
             rows_per_range: 100_000,
             max_key_span: None,
         }
