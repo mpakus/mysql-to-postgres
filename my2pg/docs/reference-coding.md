@@ -21,6 +21,7 @@ The [repository manifest](reference-repositories.json) records exact commits, so
 | `ref-mysql_async` | MySQL row streaming, raw values, result cleanup, pool and authentication |
 | `ref-rust-postgres` | tokio-postgres COPY sink completion, transaction cleanup and protocol tests |
 | `ref-indicatif` | stderr drawing, TTY detection, concurrent progress and terminal tests |
+| `ref-ora2pg` | Perl MySQL mappings, assessment inventory and post-migration validation; design reference only |
 | `ref` / `project` | Search all reference / project indexes respectively |
 
 ## Before each coding task
@@ -43,7 +44,7 @@ rtk run 'python3 my2pg/bin/reference-search.py ref-indicatif is_hidden --symbol'
 rtk run 'sed -n "735,765p" references/rust-postgres/tokio-postgres/tests/test/main.rs'
 ```
 
-The helpers resolve corpus paths from their own location, so they also work when invoked by absolute path from a worktree or another directory. Add `--json` to save raw search evidence, `-k N` for more results, and `--full N` to control passage length. Symbol detection is a small heuristic for Rust/Lisp/Clojure declarations, not a complete AST or call graph. Verify definitions in the original file.
+The helpers resolve corpus paths from their own location, so they also work when invoked by absolute path from a worktree or another directory. Add `--json` to save raw search evidence, `-k N` for more results, and `--full N` to control passage length. Symbol detection is a small heuristic for Rust/Lisp/Clojure/Perl declarations, not a complete AST or call graph. Verify definitions in the original file.
 
 ## Start, stop and inspect
 
@@ -66,7 +67,7 @@ The coordinator owns shared index rebuilds. A rebuild temporarily replaces the s
 ```sh
 # Rebuild the working project's sources after implementation changes.
 rtk run 'python3 my2pg/bin/reference-index.py project-my2pg'
-# Rebuild all seven pinned corpora.
+# Rebuild all registered corpora.
 rtk run 'python3 my2pg/bin/reference-index.py'
 ```
 
@@ -98,3 +99,5 @@ Official sources: [LLM documentation index](https://xerj.org/llms.txt), [install
 These files were read and searched locally; their integration tests were not executed by the setup task. See [the setup worklog](../worklog/2026-10-01-reference-coding.md) for commands and evidence.
 
 Paganel's root declares AGPL-3.0-or-later and components may have different licenses. dmt-rs declares MIT in Cargo metadata but has no root license file in the pinned checkout. Use these as design references and implement our reviewed contract independently. Any copied/adapted code or fixtures need provenance and an explicit license decision during T23; preserving a clone is not a decision to adopt its license or dependency structure.
+
+Ora2Pg is registered at its existing sibling `ora2pg/` checkout, pinned to `d53a3dfd5930788098f2e178a8fd006c9eabcaa9`. The importer includes Perl `.pm`/`.pl`/`.pod` files and its extensionless commands as plain text. Its GPL-3.0 implementation remains a read-only design reference; no Perl code or fixtures were copied into My2pg. See [the source comparison](ora2pg-research.md) and [adaptation evidence](../worklog/2026-10-27-ora2pg-quality.md).

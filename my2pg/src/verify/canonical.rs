@@ -1,6 +1,6 @@
 //! Canonical row encodings for the narrowly supported cross-engine type subset.
 //!
-//! PostgreSQL values must come from explicit `column::text` projections. This
+//! PostgreSQL values come from explicit text/hex projections. This
 //! module never treats driver formatting as a conversion policy.
 
 use crate::{
@@ -23,7 +23,7 @@ pub enum CanonicalError {
 /// Encode a source row using the migration's resolved conversion rules.
 ///
 /// `columns` and `values` must be in the exact source projection order. Only
-/// signed/unsigned integers, exact decimals, text, and booleans are supported.
+/// signed/unsigned integers, exact decimals, text, booleans and binary are supported.
 pub fn mysql_row(columns: &[ColumnPlan], values: &[RawValue]) -> Result<Vec<u8>, CanonicalError> {
     if columns.len() != values.len() {
         return Err(CanonicalError::RowWidth);
@@ -36,13 +36,22 @@ pub fn mysql_row(columns: &[ColumnPlan], values: &[RawValue]) -> Result<Vec<u8>,
         append_field(
             &mut row,
             tag,
-            text.map(|text| payload(&column.kind, &text)).transpose()?,
+            text.map(|text| {
+                let text = if column.kind == ValueKind::Binary {
+                    text.strip_prefix("\\x")
+                        .ok_or(CanonicalError::InvalidText(ValueKind::Binary))?
+                } else {
+                    &text
+                };
+                payload(&column.kind, text)
+            })
+            .transpose()?,
         );
     }
     Ok(row)
 }
 
-/// Encode a target row whose selected expressions are explicitly cast to `text`.
+/// Encode a target row projected as text, with bytea projected by `encode(col,'hex')`.
 ///
 /// The caller is responsible for constructing those projections in the same
 /// resolved column order; non-text PostgreSQL OIDs are not accepted here.
@@ -80,6 +89,12 @@ fn kind_tag(column: &ColumnPlan) -> Result<u8, CanonicalError> {
             column.transform.as_deref(),
             None | Some("tinyint-to-boolean" | "bits-to-boolean")
         ),
+        ValueKind::Binary => matches!(
+            column.transform.as_deref(),
+            None | Some(
+                "binary-to-bytea" | "byte-vector-to-bytea" | "bytes-to-pg-bytea" | "hex-to-bytea"
+            )
+        ),
         _ => false,
     };
     if !transform_supported {
@@ -91,6 +106,7 @@ fn kind_tag(column: &ColumnPlan) -> Result<u8, CanonicalError> {
         ValueKind::Decimal => 3,
         ValueKind::Text => 4,
         ValueKind::Boolean => 5,
+        ValueKind::Binary => 6,
         _ => return Err(CanonicalError::UnsupportedKind(column.kind.clone())),
     })
 }
@@ -115,6 +131,18 @@ fn payload(kind: &ValueKind, text: &str) -> Result<Vec<u8>, CanonicalError> {
             .map_err(|_| CanonicalError::InvalidText(kind.clone())),
         ValueKind::Decimal => decimal(text, kind),
         ValueKind::Text => Ok(text.as_bytes().to_vec()),
+        ValueKind::Binary => {
+            if !text.len().is_multiple_of(2) || !text.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+                return Err(CanonicalError::InvalidText(ValueKind::Binary));
+            }
+            Ok(text
+                .as_bytes()
+                .as_chunks::<2>()
+                .0
+                .iter()
+                .map(|pair| u8::from_str_radix(std::str::from_utf8(pair).unwrap(), 16).unwrap())
+                .collect())
+        }
         ValueKind::Boolean => match text {
             "true" | "t" => Ok(vec![1]),
             "false" | "f" => Ok(vec![0]),

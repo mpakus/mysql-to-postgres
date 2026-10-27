@@ -220,7 +220,7 @@ async fn append_content_baseline_unites_existing_rows_and_migrated_rows_exactly(
         .unwrap();
     admin
         .query_drop(
-            "CREATE TABLE source.t18_live_content(value VARCHAR(64) NOT NULL) ENGINE=InnoDB",
+            "CREATE TABLE source.t18_live_content(value VARBINARY(64) NOT NULL) ENGINE=InnoDB",
         )
         .await
         .unwrap();
@@ -234,8 +234,13 @@ async fn append_content_baseline_unites_existing_rows_and_migrated_rows_exactly(
     let mut target = postgres::connect(&config.target, &required("MY2PG_POSTGRES_URL"))
         .await
         .unwrap();
-    target.client.batch_execute("DROP SCHEMA IF EXISTS t18_live_content CASCADE; CREATE SCHEMA t18_live_content; CREATE TABLE t18_live_content.rows(value text NOT NULL); INSERT INTO t18_live_content.rows VALUES ('preexisting'),('preexisting')").await.unwrap();
-    let plan = live_plan(ExistingPolicy::Append, None);
+    target.client.batch_execute("DROP SCHEMA IF EXISTS t18_live_content CASCADE; CREATE SCHEMA t18_live_content; CREATE TABLE t18_live_content.rows(value bytea NOT NULL); INSERT INTO t18_live_content.rows VALUES ('preexisting'),('preexisting'); SET bytea_output=escape").await.unwrap();
+    let mut plan = live_plan(ExistingPolicy::Append, None);
+    let column = &mut plan.tables[0].columns[0];
+    column.kind = ValueKind::Binary;
+    column.source_type = "varbinary(64)".into();
+    column.target_type = "bytea".into();
+    column.charset = None;
     let baseline = capture_append_baseline(&mut target, &plan, 2 * 256 * 1024, 1024)
         .await
         .unwrap();
@@ -270,6 +275,75 @@ async fn append_content_baseline_unites_existing_rows_and_migrated_rows_exactly(
     );
 
     source.disconnect().await.unwrap();
+    target
+        .client
+        .batch_execute("DROP SCHEMA t18_live_content CASCADE")
+        .await
+        .unwrap();
+    admin
+        .query_drop("DROP TABLE source.t18_live_content")
+        .await
+        .unwrap();
+    admin.disconnect().await.unwrap();
+    target.close().await.unwrap();
+}
+
+#[tokio::test]
+#[ignore = "requires owned Oracle MySQL/PostgreSQL TLS fixtures"]
+async fn binary_content_checks_every_keyless_row_and_duplicate_multiplicity() {
+    let config = live_config();
+    let mut admin = mysql::connect(&config.source, &required("MY2PG_MYSQL_ROOT_URL"), 4096)
+        .await
+        .unwrap();
+    admin
+        .query_drop("CREATE TABLE source.t18_live_content(value VARBINARY(512)) ENGINE=InnoDB")
+        .await
+        .unwrap();
+    for batch in (1..=11000).collect::<Vec<_>>().chunks(1000) {
+        let values = batch
+            .iter()
+            .map(|number| format!("(UNHEX('{number:08x}'))"))
+            .collect::<Vec<_>>()
+            .join(",");
+        admin
+            .query_drop(format!(
+                "INSERT INTO source.t18_live_content VALUES {values}"
+            ))
+            .await
+            .unwrap();
+    }
+    let all: String = (0..=255).map(|byte| format!("{byte:02x}")).collect();
+    let reversed: String = (0..=255).rev().map(|byte| format!("{byte:02x}")).collect();
+    admin.query_drop(format!("INSERT INTO source.t18_live_content VALUES(NULL),(X''),(UNHEX('{all}')),(UNHEX('{all}')),(UNHEX('{reversed}'))")).await.unwrap();
+    let mut target = postgres::connect(&config.target, &required("MY2PG_POSTGRES_URL"))
+        .await
+        .unwrap();
+    target.client.batch_execute(&format!("CREATE SCHEMA t18_live_content; CREATE TABLE t18_live_content.rows(value bytea);
+        INSERT INTO t18_live_content.rows SELECT decode(lpad(to_hex(i),8,'0'),'hex') FROM generate_series(1,11000) AS i;
+        INSERT INTO t18_live_content.rows VALUES(NULL),(''::bytea),(decode('{all}','hex')),(decode('{all}','hex')),(decode('{reversed}','hex'));
+        SET bytea_output=escape")).await.unwrap();
+    let mut plan = live_plan(ExistingPolicy::Error, None);
+    let column = &mut plan.tables[0].columns[0];
+    column.kind = ValueKind::Binary;
+    column.nullable = true;
+    column.source_type = "varbinary(512)".into();
+    column.target_type = "bytea".into();
+    column.charset = None;
+    for (sql, expected) in [
+        (None, VerificationStatus::Complete),
+        (Some("UPDATE t18_live_content.rows SET value=decode('ffffffff','hex') WHERE value=decode('00002af8','hex')".into()), VerificationStatus::Different),
+        (Some("UPDATE t18_live_content.rows SET value=decode('00002af8','hex') WHERE value=decode('ffffffff','hex')".into()), VerificationStatus::Complete),
+        (Some(format!("UPDATE t18_live_content.rows SET value=decode('{reversed}','hex') WHERE ctid=(SELECT ctid FROM t18_live_content.rows WHERE value=decode('{all}','hex') LIMIT 1)")), VerificationStatus::Different),
+    ] {
+        if let Some(sql) = sql { target.client.batch_execute(&sql).await.unwrap(); }
+        let mut source = mysql::connect(&config.source, &required("MY2PG_MYSQL_URL"), 4096).await.unwrap();
+        let result = verify_content(&mut source, &mut target, &plan, &[table_report(11005)], ContentVerificationOptions {
+            memory_bytes: 2 * 256 * 1024, max_row_bytes: 4096, source_snapshot_already_pinned: false, append_baseline: None,
+        }).await;
+        assert_eq!(result.status, expected, "{:?}", result.differences);
+        assert_eq!(result.tables_checked, 1);
+        source.disconnect().await.unwrap();
+    }
     target
         .client
         .batch_execute("DROP SCHEMA t18_live_content CASCADE")

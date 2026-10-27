@@ -148,18 +148,66 @@ fn malformed_or_unreviewed_types_are_explicitly_rejected_without_values() {
         Err(CanonicalError::InvalidText(ValueKind::Boolean))
     ));
 
-    for kind in [
-        ValueKind::Float,
-        ValueKind::Binary,
-        ValueKind::Json,
-        ValueKind::Date,
-    ] {
+    for kind in [ValueKind::Float, ValueKind::Json, ValueKind::Date] {
         let unsupported = column(kind.clone(), "source", "target");
         assert!(matches!(
             mysql_row(std::slice::from_ref(&unsupported), &[RawValue::Null]),
             Err(CanonicalError::UnsupportedKind(actual)) if actual == kind
         ));
     }
+}
+
+#[test]
+fn binary_canonicalization_preserves_bytes_null_empty_and_approved_transforms() {
+    let all_bytes: Vec<u8> = (0..=255).collect();
+    let hex: String = (0..=255).map(|byte| format!("{byte:02X}")).collect();
+    let mut expected = vec![6, 1];
+    expected.extend_from_slice(&256u64.to_be_bytes());
+    expected.extend_from_slice(&all_bytes);
+    for transform in [
+        None,
+        Some("binary-to-bytea"),
+        Some("byte-vector-to-bytea"),
+        Some("bytes-to-pg-bytea"),
+        Some("hex-to-bytea"),
+    ] {
+        let mut binary = column(ValueKind::Binary, "blob", "bytea");
+        binary.transform = transform.map(str::to_string);
+        let columns = std::slice::from_ref(&binary);
+        let value = if transform == Some("hex-to-bytea") {
+            hex.as_bytes().to_vec()
+        } else {
+            all_bytes.clone()
+        };
+        assert_eq!(
+            mysql_row(columns, &[RawValue::Bytes(value)]).unwrap(),
+            expected
+        );
+        assert_eq!(postgres_text_row(columns, &[Some(&hex)]).unwrap(), expected);
+        assert_eq!(mysql_row(columns, &[RawValue::Null]).unwrap(), vec![6, 0]);
+        assert_eq!(
+            mysql_row(columns, &[RawValue::Bytes(vec![])]).unwrap(),
+            [vec![6, 1], 0u64.to_be_bytes().to_vec()].concat()
+        );
+        assert_eq!(
+            postgres_text_row(columns, &[Some("")]).unwrap(),
+            [vec![6, 1], 0u64.to_be_bytes().to_vec()].concat()
+        );
+    }
+    let mut binary = column(ValueKind::Binary, "blob", "bytea");
+    for invalid in ["0", "0x00", "\\x00", "gg", "00 secret", "é"] {
+        let error = postgres_text_row(std::slice::from_ref(&binary), &[Some(invalid)]).unwrap_err();
+        assert!(matches!(
+            error,
+            CanonicalError::InvalidText(ValueKind::Binary)
+        ));
+        assert!(!error.to_string().contains(invalid));
+    }
+    binary.transform = Some("right-trim".into());
+    assert!(matches!(
+        mysql_row(&[binary], &[RawValue::Null]),
+        Err(CanonicalError::UnsupportedKind(ValueKind::Binary))
+    ));
 }
 
 #[test]

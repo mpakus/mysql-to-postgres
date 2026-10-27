@@ -13,6 +13,33 @@ SPEC.loader.exec_module(index)
 
 
 class ReferenceIndexTests(unittest.TestCase):
+    def test_perl_reference_preserves_sources_docs_symbols_and_pin_guard(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            corpus = parent / "ora2pg"
+            (corpus / "lib").mkdir(parents=True)
+            (corpus / "doc").mkdir()
+            (corpus / "scripts").mkdir()
+            (corpus / "lib/MySQL.pm").write_text("# café\nsub _column_info { }\n")
+            (corpus / "doc/Ora2Pg.pod").write_text("=head1 Validation\n")
+            (corpus / "scripts/ora2pg").write_text("#!/usr/bin/perl\n")
+            (corpus / "README").write_text("MySQL migration\n")
+            subprocess.run(["git", "init", "--quiet", str(corpus)], check=True)
+            subprocess.run(["git", "-C", str(corpus), "add", "."], check=True)
+            subprocess.run(["git", "-C", str(corpus), "-c", "user.name=Fixture",
+                            "-c", "user.email=fixture@example.invalid", "-c", "commit.gpgsign=false",
+                            "commit", "--quiet", "-m", "fixture"], check=True)
+            revision = subprocess.check_output(["git", "-C", str(corpus), "rev-parse", "HEAD"], text=True).strip()
+            with patch.object(index, "ROOT", parent):
+                documents, evidence = index.documents({"path":"ora2pg", "prefix":"ref-ora2pg", "commit":revision})
+                self.assertEqual(set(evidence["included"]), {"lib/MySQL.pm", "doc/Ora2Pg.pod", "scripts/ora2pg", "README"})
+                source = next(d for d in documents if d["ax_path"] == "lib/MySQL.pm")
+                self.assertEqual(source["code"], "# café\nsub _column_info { }\n")
+                self.assertEqual(source["defs"], "_column_info")
+                self.assertEqual((source["start_line"], source["end_line"]), (1, 2))
+                with self.assertRaisesRegex(RuntimeError, "revision differs"):
+                    index.documents({"path":"ora2pg", "prefix":"ref-ora2pg", "commit":"wrong"})
+
     def test_parent_git_retains_revision_scripts_and_excludes_build_outputs(self):
         with tempfile.TemporaryDirectory() as temporary:
             parent = Path(temporary)

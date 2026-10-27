@@ -375,7 +375,15 @@ async fn compare_live_table(
 fn target_projection(columns: &[crate::model::ColumnPlan], table: &TablePlan) -> String {
     let projection = columns
         .iter()
-        .map(|column| format!("{}::text", postgres::quote_ident(&column.target_name)))
+        .map(|column| {
+            let name = postgres::quote_ident(&column.target_name);
+            if column.kind == crate::model::ValueKind::Binary {
+                // Server bytea_output settings must not change canonical bytes.
+                format!("pg_catalog.encode({name},'hex')")
+            } else {
+                format!("{name}::text")
+            }
+        })
         .collect::<Vec<_>>();
     format!(
         "SELECT {} FROM {}",

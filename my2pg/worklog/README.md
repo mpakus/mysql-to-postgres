@@ -14,6 +14,7 @@ For a contract change, add a short decision section: old behavior, new behavior,
 
 ## Entries
 
+- [2026-10-27 — Ora2Pg research, binary content verification and routine inventory](2026-10-27-ora2pg-quality.md)
 - [2026-10-19 — Strangler raw text-to-bytea and default preservation](2026-10-19-strangler-binary-parity.md)
 - [2026-10-08 — Strangler loader parity and built-in FULLTEXT mapping](2026-10-08-strangler-loader-builtins.md)
 

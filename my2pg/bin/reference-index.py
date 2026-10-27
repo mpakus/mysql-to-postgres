@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild the seven local XERJ source indexes; no database dump extraction."""
+"""Rebuild pinned local XERJ source indexes; no database dump extraction."""
 import argparse
 import hashlib
 import json
@@ -14,11 +14,13 @@ ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "my2pg/docs/reference-repositories.json"
 EXTENSIONS = {".rs", ".lisp", ".clj", ".cljs", ".edn", ".asd", ".load", ".sql",
               ".md", ".rst", ".txt", ".toml", ".yaml", ".yml", ".json", ".sh",
-              ".py", ".ps1", ".c", ".h", ".ppl", ".out", ".csv", ".stderr", ".patch"}
+              ".py", ".ps1", ".c", ".h", ".ppl", ".out", ".csv", ".stderr", ".patch",
+              ".pm", ".pl", ".pod", ".PL"}
 NAMES = {"Makefile", "Dockerfile", "LICENSE", "LICENSE-MIT", "LICENSE-APACHE", "COPYING",
-         "build-linux", "build-macos"}
+         "build-linux", "build-macos", "README", "INSTALL", "MANIFEST", "changelog",
+         "ora2pg", "ora2pg_scanner"}
 IGNORED = {"target", "build", "dist", "node_modules", "__pycache__", "vendor"}
-SYMBOLS = re.compile(r"(?:\b(?:fn|struct|enum|trait|type|mod|const)\s+|"
+SYMBOLS = re.compile(r"(?:\b(?:fn|struct|enum|trait|type|mod|const|sub)\s+|"
                      r"\(\s*(?:defn-?|defun|defmethod|defclass|defmacro)\s+)([A-Za-z_][\w!?-]*)")
 
 

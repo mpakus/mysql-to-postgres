@@ -206,6 +206,7 @@ MYSQL_CASE_INVENTORY = (
     "t17_spatial::native_spatial_requires_preinstalled_postgis_and_preserves_nothing_without_it",
     "t17_spatial::native_spatial_values_preserve_shape_empty_null_and_srid_with_postgis",
     "t18_content::append_content_baseline_unites_existing_rows_and_migrated_rows_exactly",
+    "t18_content::binary_content_checks_every_keyless_row_and_duplicate_multiplicity",
     "t18_content::live_content_streams_transformed_rows_and_reports_equal_count_corruption",
     "t18_pipeline::content_verification_is_reported_by_the_real_pipeline_and_append_includes_baseline",
     "t19_views_hooks::after_hook_sql_failure_fails_an_otherwise_completed_load",

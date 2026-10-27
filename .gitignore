@@ -3,3 +3,4 @@ references/
 .toolchains/
 /pgloader
 .DS_Store
+/ora2pg

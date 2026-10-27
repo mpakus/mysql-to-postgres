@@ -141,6 +141,8 @@ my2pg config import old.load --output migration.toml --target-schema legacy --co
 - `verify`: read-only comparison using the explicit completed run's `plan.json` and `report.json`. The report binds the plan and password-free source/target endpoint identities. Use the same endpoints that ran the migration; password rotation is allowed. It scans the MySQL source and PostgreSQL target again, so keep the source dataset unchanged since the run. It cannot reattach to the original `single_snapshot` or recover an append baseline, so append count verification reports unsupported and complete content verification of nonempty append targets remains unsupported.
 - `config import`: offline translation with compatibility diagnostics. No database access.
 
+Complete content verification supports signed/unsigned integers, exact decimals, text, booleans and `bytea`, including the supported transforms for those families. Binary checks compare every byte and distinguish NULL from empty values; PostgreSQL `bytea_output` does not affect the result. Keyless tables retain duplicate multiplicity through bounded external sorting. Other types still return explicit `unsupported` coverage; a successful count/schema check alone does not prove content equality. For a fresh migration, set `[verification] mode = "content"`; after a completed full migration, use the `verify --mode content` command above while the source remains unchanged.
+
 ## Console behavior
 
 Proposed TTY display:

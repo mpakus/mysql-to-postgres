@@ -542,7 +542,10 @@ pub fn build(
                 "SOURCE_UNSUPPORTED_OBJECT",
                 &object.object,
                 &object.reason,
-                if matches!(object.kind.as_str(), "routine" | "event" | "trigger") {
+                if matches!(
+                    object.kind.as_str(),
+                    "routine" | "function" | "procedure" | "event" | "trigger"
+                ) {
                     Severity::Warning
                 } else {
                     Severity::Error

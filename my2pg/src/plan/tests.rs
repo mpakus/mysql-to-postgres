@@ -402,6 +402,49 @@ fn codes(result: Result<MigrationPlan, PlanError>) -> Vec<String> {
 }
 
 #[test]
+fn real_routine_kinds_are_manual_inventory_warnings_while_structural_kinds_block() {
+    let (mut config, mut source, target) = inputs();
+    for kind in ["function", "procedure", "routine", "trigger", "event"] {
+        source.unsupported_objects = vec![UnsupportedObject {
+            object: format!("manual_{kind}"),
+            kind: kind.into(),
+            reason: format!("source {kind} requires manual migration"),
+        }];
+        let plan = build(&config, &source, &target).unwrap();
+        let diagnostic = plan
+            .diagnostics
+            .iter()
+            .find(|d| d.code == "SOURCE_UNSUPPORTED_OBJECT")
+            .unwrap();
+        assert_eq!(diagnostic.severity, Severity::Warning);
+        assert_eq!(diagnostic.object, Some(format!("manual_{kind}")));
+        assert!(diagnostic.message.contains("manual migration"));
+        config.overrides.push(ObjectOverride {
+            object: format!("manual_{kind}"),
+            omit: true,
+            target_expression: None,
+            target_sql: None,
+            materialize: None,
+        });
+        let omitted = build(&config, &source, &target).unwrap();
+        assert!(
+            !omitted
+                .diagnostics
+                .iter()
+                .any(|d| d.code == "SOURCE_UNSUPPORTED_OBJECT")
+        );
+        assert!(omitted.exclusions.contains(&format!("manual_{kind}")));
+        config.overrides.clear();
+    }
+    for kind in ["partition", "storage_options", "unknown"] {
+        source.unsupported_objects[0].kind = kind.into();
+        assert!(
+            codes(build(&config, &source, &target)).contains(&"SOURCE_UNSUPPORTED_OBJECT".into())
+        );
+    }
+}
+
+#[test]
 fn text_to_bytea_uses_raw_projection_and_original_default_bytes() {
     let (mut config, mut source, target) = inputs();
     let mut raw = column(&source, "raw`bytes", "varchar");

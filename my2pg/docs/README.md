@@ -16,6 +16,7 @@ Build `my2pg/` beside `pgloader/` as an independent Rust application. Keep MySQL
 | [Implementation plan](implementation-plan.md) | Ordered milestones, dependencies, risks, and cleanup |
 | [Codex tasks](agent-tasks.md) | Task IDs, file ownership, execution waves, and agent briefs |
 | [Reference coding](reference-coding.md) | Installed XERJ, pinned repositories, source search, and required research before coding |
+| [Ora2Pg comparison](ora2pg-research.md) | MySQL mapping/assessment ideas, adopted quality improvements and prioritized follow-ups |
 | [Checklists](checklists.md) | Evidence required to finish tasks, milestones, and a release |
 | [Worklog](../worklog/README.md) | How to record progress and hand work between agents |
 | [Development](development.md) | Runnable build, offline validation and disposable database commands |

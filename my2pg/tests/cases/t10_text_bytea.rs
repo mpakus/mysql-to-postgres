@@ -23,7 +23,7 @@ async fn native_text_bytea_preserves_bytes_defaults_and_parallel_readers() {
         "migration":{"reset_sequences":false,"batch_rows":2,"batch_bytes":8192,
             "max_row_bytes":4096,"memory_bytes":1048576},
         "tables":{"include":[name]},
-        "verification":{"mode":"counts_and_schema"},
+        "verification":{"mode":"content"},
         "report":{"directory":directory.join("runs"),"console":"json","progress":"never"}
     })).unwrap();
     for column in [
@@ -65,7 +65,29 @@ async fn native_text_bytea_preserves_bytes_defaults_and_parallel_readers() {
         .await
         .unwrap();
     // Inspect while empty, then check the recovered bytes against a real inserted default.
+    source
+        .query_drop(format!(
+            "CREATE FUNCTION {}() RETURNS INTEGER DETERMINISTIC RETURN 1",
+            mysql::quote_ident(&format!("{name}_function"))
+        ))
+        .await
+        .unwrap();
+    source
+        .query_drop(format!(
+            "CREATE PROCEDURE {}() SELECT 1",
+            mysql::quote_ident(&format!("{name}_procedure"))
+        ))
+        .await
+        .unwrap();
     let empty_catalog = mysql::inspect(&mut source).await.unwrap();
+    for kind in ["function", "procedure"] {
+        assert!(
+            empty_catalog
+                .unsupported_objects
+                .iter()
+                .any(|object| object.kind == kind && object.object == format!("{name}_{kind}"))
+        );
+    }
     source
         .query_drop(format!("INSERT INTO {table}(id) VALUES (4)"))
         .await
@@ -119,6 +141,51 @@ async fn native_text_bytea_preserves_bytes_defaults_and_parallel_readers() {
             .collect();
         assert_eq!(ranges.len(), if readers > 1 { 2 } else { 0 });
         let qualified = postgres::qualified(&config.target.schema, &name);
+        let outcome: serde_json::Value = String::from_utf8_lossy(&output.stdout)
+            .lines()
+            .map(|line| serde_json::from_str::<serde_json::Value>(line).unwrap())
+            .find(|event| event["kind"] == "outcome")
+            .unwrap();
+        assert_eq!(outcome["report"]["verification"]["status"], "complete");
+        let run = outcome["report"]["artifact_dir"].as_str().unwrap();
+        for (change, status, exit) in [
+            (None, "complete", 0),
+            (
+                Some(format!(
+                    "UPDATE {qualified} SET \"raw`bytes\"=set_byte(\"raw`bytes\",255,0) WHERE id=1"
+                )),
+                "different",
+                4,
+            ),
+            (
+                Some(format!(
+                    "UPDATE {qualified} SET \"raw`bytes\"=set_byte(\"raw`bytes\",255,255) WHERE id=1"
+                )),
+                "complete",
+                0,
+            ),
+        ] {
+            if let Some(sql) = change {
+                target.client.batch_execute(&sql).await.unwrap();
+            }
+            let checked = Command::new(env!("CARGO_BIN_EXE_my2pg"))
+                .arg("verify")
+                .arg(&path)
+                .arg("--run-dir")
+                .arg(run)
+                .args(["--mode", "content", "--output", "json"])
+                .output()
+                .await
+                .unwrap();
+            assert_eq!(
+                checked.status.code(),
+                Some(exit),
+                "{}",
+                String::from_utf8_lossy(&checked.stderr)
+            );
+            let document: serde_json::Value = serde_json::from_slice(&checked.stdout).unwrap();
+            assert_eq!(document["verification"]["status"], status);
+        }
         let actual = target.client.query(&format!("SELECT id,encode(\"raw`bytes\",'hex'),encode(notes,'hex'),encode(fixed,'hex'),encode(empty_value,'hex'),encode(nullable_value,'hex'),encode(hex_prefix,'hex'),encode(hex_text,'hex'),normal_text FROM {qualified} ORDER BY id"), &[]).await.unwrap();
         assert_eq!(actual.len(), expected.len());
         for (row, original) in actual.iter().zip(&expected) {
@@ -142,6 +209,16 @@ async fn native_text_bytea_preserves_bytes_defaults_and_parallel_readers() {
             .await
             .unwrap();
         let empty_plan = my2pg::plan::build(&empty_config, &empty_catalog, &catalog).unwrap();
+        for kind in ["function", "procedure"] {
+            assert!(
+                empty_plan
+                    .diagnostics
+                    .iter()
+                    .any(|diagnostic| diagnostic.object.as_deref()
+                        == Some(&format!("{name}_{kind}"))
+                        && diagnostic.severity == my2pg::model::Severity::Warning)
+            );
+        }
         for step in &empty_plan.ddl {
             target.client.batch_execute(&step.sql).await.unwrap();
         }
@@ -175,6 +252,20 @@ async fn native_text_bytea_preserves_bytes_defaults_and_parallel_readers() {
     assert_eq!(count, 4);
     source
         .query_drop(format!("DROP TABLE {table}"))
+        .await
+        .unwrap();
+    source
+        .query_drop(format!(
+            "DROP FUNCTION {}",
+            mysql::quote_ident(&format!("{name}_function"))
+        ))
+        .await
+        .unwrap();
+    source
+        .query_drop(format!(
+            "DROP PROCEDURE {}",
+            mysql::quote_ident(&format!("{name}_procedure"))
+        ))
         .await
         .unwrap();
     source.disconnect().await.unwrap();
