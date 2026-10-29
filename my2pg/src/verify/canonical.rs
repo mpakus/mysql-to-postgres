@@ -22,8 +22,8 @@ pub enum CanonicalError {
 
 /// Encode a source row using the migration's resolved conversion rules.
 ///
-/// `columns` and `values` must be in the exact source projection order. Only
-/// signed/unsigned integers, exact decimals, text, booleans and binary are supported.
+/// `columns` and `values` must be in the exact source projection order. Supported values
+/// are integers, exact decimals, text, booleans, binary, dates and microsecond timestamps.
 pub fn mysql_row(columns: &[ColumnPlan], values: &[RawValue]) -> Result<Vec<u8>, CanonicalError> {
     if columns.len() != values.len() {
         return Err(CanonicalError::RowWidth);
@@ -95,6 +95,10 @@ fn kind_tag(column: &ColumnPlan) -> Result<u8, CanonicalError> {
                 "binary-to-bytea" | "byte-vector-to-bytea" | "bytes-to-pg-bytea" | "hex-to-bytea"
             )
         ),
+        ValueKind::Date | ValueKind::Datetime | ValueKind::Timestamp => matches!(
+            column.transform.as_deref(),
+            None | Some("zero-dates-to-null" | "zero-dates-to-epoch")
+        ),
         _ => false,
     };
     if !transform_supported {
@@ -107,6 +111,9 @@ fn kind_tag(column: &ColumnPlan) -> Result<u8, CanonicalError> {
         ValueKind::Text => 4,
         ValueKind::Boolean => 5,
         ValueKind::Binary => 6,
+        ValueKind::Date => 7,
+        ValueKind::Datetime => 8,
+        ValueKind::Timestamp => 9,
         _ => return Err(CanonicalError::UnsupportedKind(column.kind.clone())),
     })
 }
@@ -148,8 +155,75 @@ fn payload(kind: &ValueKind, text: &str) -> Result<Vec<u8>, CanonicalError> {
             "false" | "f" => Ok(vec![0]),
             _ => Err(CanonicalError::InvalidText(kind.clone())),
         },
+        ValueKind::Date | ValueKind::Datetime | ValueKind::Timestamp => temporal(text, kind),
         _ => Err(CanonicalError::UnsupportedKind(kind.clone())),
     }
+}
+
+fn temporal(text: &str, kind: &ValueKind) -> Result<Vec<u8>, CanonicalError> {
+    let invalid = || CanonicalError::InvalidText(kind.clone());
+    // Both sessions use ISO dates and UTC; offsets must never be silently discarded.
+    let text = if *kind == ValueKind::Timestamp {
+        text.strip_suffix("+00").ok_or_else(invalid)?
+    } else {
+        text
+    };
+    let (date, time) = if *kind == ValueKind::Date {
+        (text, None)
+    } else {
+        let (date, time) = text.split_once(' ').ok_or_else(invalid)?;
+        (date, Some(time))
+    };
+    if date.len() != 10
+        || !date.bytes().enumerate().all(|(i, byte)| {
+            if i == 4 || i == 7 {
+                byte == b'-'
+            } else {
+                byte.is_ascii_digit()
+            }
+        })
+    {
+        return Err(invalid());
+    }
+    let year: u16 = date[..4].parse().unwrap();
+    let month: u8 = date[5..7].parse().unwrap();
+    let day: u8 = date[8..].parse().unwrap();
+    let leap = year.is_multiple_of(4) && (!year.is_multiple_of(100) || year.is_multiple_of(400));
+    let last_day = match month {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        4 | 6 | 9 | 11 => 30,
+        2 if leap => 29,
+        2 => 28,
+        _ => 0,
+    };
+    if year == 0 || day == 0 || day > last_day {
+        return Err(invalid());
+    }
+    let Some(time) = time else {
+        return Ok(date.as_bytes().to_vec());
+    };
+    let (clock, fraction) = time.split_once('.').unwrap_or((time, ""));
+    if clock.len() != 8
+        || !clock.bytes().enumerate().all(|(i, byte)| {
+            if i == 2 || i == 5 {
+                byte == b':'
+            } else {
+                byte.is_ascii_digit()
+            }
+        })
+        || fraction.len() > 6
+        || !fraction.bytes().all(|byte| byte.is_ascii_digit())
+        || time.ends_with('.')
+    {
+        return Err(invalid());
+    }
+    if clock[..2].parse::<u8>().unwrap() > 23
+        || clock[3..5].parse::<u8>().unwrap() > 59
+        || clock[6..].parse::<u8>().unwrap() > 59
+    {
+        return Err(invalid());
+    }
+    Ok(format!("{date} {clock}.{fraction:0<6}").into_bytes())
 }
 
 fn decimal(text: &str, kind: &ValueKind) -> Result<Vec<u8>, CanonicalError> {

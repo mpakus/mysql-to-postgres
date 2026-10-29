@@ -57,7 +57,7 @@ The Windows ZIP is **experimental and unverified**. Current artifact directory s
 
 ## Outputs and verification
 
-Default output: `target/dist/my2pg-0.1.0-<target>.tar.gz` for Linux/macOS and `.zip` for Windows, each with an adjacent `.sha256` file. Use `--out-dir /path/to/output` to change the destination. Failed builds return nonzero and do not package a stale executable. The archive contains the binary, [operator docs](config-and-cli.md), [scope](scope-and-compatibility.md), examples, project/dependency notices, `BUILD-INFO.json` and a per-file `SHA256SUMS`. Source revision and dirty state are recorded when Git is available; dependency/toolchain inputs are pinned, but no independent-host reproducibility claim follows from this script.
+Default output: `target/dist/my2pg-<version>-<target>.tar.gz` for Linux/macOS and `.zip` for Windows, each with an adjacent `.sha256` file. Use `--out-dir /path/to/output` to change the destination. Failed builds return nonzero and do not package a stale executable. The archive contains the binary, [operator docs](config-and-cli.md), [scope](scope-and-compatibility.md), examples, project/dependency notices, `BUILD-INFO.json` and a per-file `SHA256SUMS`. Source revision and dirty state are recorded when Git is available; dependency/toolchain inputs are pinned, but no independent-host reproducibility claim follows from this script.
 
 Verify the archive on Linux with `sha256sum --check <archive>.sha256`, or on macOS with `shasum -a 256 --check <archive>.sha256`. On Windows, compare `Get-FileHash <archive> -Algorithm SHA256` with its sidecar. After extraction, verify `SHA256SUMS` from inside the bundle, then run `./my2pg --version` and `./my2pg --help` (Windows: `./my2pg.exe`).
 

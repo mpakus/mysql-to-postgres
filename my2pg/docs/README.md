@@ -21,7 +21,7 @@ Build `my2pg/` beside `pgloader/` as an independent Rust application. Keep MySQL
 | [Worklog](../worklog/README.md) | How to record progress and hand work between agents |
 | [Development](development.md) | Runnable build, offline validation and disposable database commands |
 | [Release builds](releases.md) | Linux/macOS archives, Docker export, experimental Windows compilation and checksums |
-| [Strangler pgloader patches](strangler-pgloader.md) | Built-in Rust parity, FULLTEXT replacement and configuration |
+| [Strangler migration lessons](strangler-pgloader.md) | Branch-backed comparison, zero-date/NULL preservation, exact temporal verification and existing loader parity |
 
 ## Decisions proposed by this plan
 
@@ -36,4 +36,4 @@ These documents define the full implementation contract. Use the task board and 
 
 ## Current completion boundary
 
-Static analysis and [XERJ setup](../worklog/2026-10-01-reference-coding.md) are complete. The [current source checkpoint](../worklog/2026-10-01-M2-existing-sequence-shutdown-checkpoint.md), `d6d00e7`, passes126 ordinary and121 fresh development-pair database cases. It integrates positive existing policies, monotonic identity handling and owned panic shutdown alongside the [earlier parallel/graph/import work](../worklog/2026-10-01-M2-parallel-graph-import-checkpoint.md). The child artifact writer is tested preparation awaiting runner integration. The [reference refresh](../worklog/2026-10-01-reference-refresh.md) records index verification; M2–M4 fidelity, fault, compatibility, server/platform matrix, performance, packaging and independent release gates remain open. The [analysis worklog](../worklog/2026-10-01-analysis.md) describes the original planning snapshot.
+Use [task status](agent-tasks.md), [checklists](checklists.md) and dated worklogs for current evidence rather than the original October 1 planning snapshot. The application includes the durable artifact writer, bounded pipeline, explicit conversion policies, content verification and local/release build tooling. The [Strangler follow-up](../worklog/2026-10-29-strangler-migration-lessons.md) records temporal safety changes and the exact checks run. Local fixture success does not complete the full server/platform matrix, performance, cutover or release acceptance gates.

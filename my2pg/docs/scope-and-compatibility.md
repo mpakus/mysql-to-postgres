@@ -60,7 +60,7 @@ The planner resolves a `ColumnPlan` once. DDL, transforms, encoding, defaults, a
 | CHAR/VARCHAR/TEXT | Preserve declared lengths where meaningful; target `varchar(n)`/`text` | Trailing spaces, multibyte lengths, empty vs NULL, collation caveats |
 | BINARY/VARBINARY/BLOB | `bytea`, retain every byte | NUL, all 256 byte values, padding, blobs larger than a batch limit |
 | Explicit CHAR/VARCHAR/TEXT → bytea | Preserve source bytes without decoding; character literal defaults require original-byte metadata | All 256 bytes, serial/range reads, charset override bypass, empty/NULL and inserted defaults |
-| DATE | `date`; invalid/zero dates reject by default | Zero month/day, partial-zero dates, invalid calendar dates, NULL |
+| DATE | `date`; invalid/zero dates reject by default; explicit full-zero-to-epoch policy preserves genuine NULL | Zero month/day, partial-zero dates, invalid calendar dates, NULL and sentinel defaults |
 | DATETIME(fsp) | `timestamp(fsp) without time zone` | Preserve wall time, fractions, DST edge values; explicit cast required for timezone interpretation |
 | TIMESTAMP(fsp) | Read with MySQL session timezone UTC; `timestamptz(fsp)` | UTC instants independent of machine timezone; fractions |
 | TIME(fsp) | `interval` preserving sign and durations beyond 24 hours | ±838:59:59 and fractional values; optional `time` cast rejects out-of-range durations |
@@ -82,6 +82,8 @@ MySQL's supported spatial storage formats use X/Y coordinates and permit an empt
 SQL NULL, empty string, string `NULL`, string `\\N`, empty binary, and empty arrays remain distinct. Embedded NUL and invalid byte sequences reject by default for PostgreSQL text. Removal/replacement is an explicit transform with counters and verification expectations.
 
 Defaults are typed literals or a supported expression, not arbitrary copied MySQL SQL. Preserve empty-string defaults. A zero-date-to-NULL rule must also reconcile a zero default and NOT NULL constraint; reject contradictory configuration before DDL. Collation-sensitive uniqueness and trailing-space comparisons require specific tests and declared target choices.
+
+`zero-dates-to-epoch` is an opt-in transform for DATE/DATETIME/TIMESTAMP values and literal defaults. Only complete zero date/time components become 1970-01-01 (UTC for timestamptz); NULL remains distinct and partial/invalid dates fail. Complete content verification includes these temporal families and their approved zero-date transforms. A requested content mode with known unsupported coverage blocks planning before COPY; counts/schema remains a separate, weaker verification choice. See [Strangler migration lessons](strangler-pgloader.md).
 
 ## Structure and naming contract
 

@@ -148,13 +148,88 @@ fn malformed_or_unreviewed_types_are_explicitly_rejected_without_values() {
         Err(CanonicalError::InvalidText(ValueKind::Boolean))
     ));
 
-    for kind in [ValueKind::Float, ValueKind::Json, ValueKind::Date] {
+    for kind in [ValueKind::Float, ValueKind::Json, ValueKind::Interval] {
         let unsupported = column(kind.clone(), "source", "target");
         assert!(matches!(
             mysql_row(std::slice::from_ref(&unsupported), &[RawValue::Null]),
             Err(CanonicalError::UnsupportedKind(actual)) if actual == kind
         ));
     }
+}
+
+#[test]
+fn temporal_content_keeps_microseconds_and_distinguishes_null_epoch_and_wall_time() {
+    for (kind, target, zero_text, valid_text) in [
+        (ValueKind::Date, "date", "1970-01-01", "2024-02-29"),
+        (
+            ValueKind::Datetime,
+            "timestamp(6)",
+            "1970-01-01 00:00:00",
+            "2024-02-29 12:34:56.1234",
+        ),
+        (
+            ValueKind::Timestamp,
+            "timestamptz(6)",
+            "1970-01-01 00:00:00+00",
+            "2024-02-29 12:34:56.1234+00",
+        ),
+    ] {
+        let mut plan = column(kind.clone(), "datetime(6)", target);
+        plan.transform = Some("zero-dates-to-epoch".into());
+        let columns = std::slice::from_ref(&plan);
+        let zero = RawValue::Date {
+            year: 0,
+            month: 0,
+            day: 0,
+            hour: 0,
+            minute: 0,
+            second: 0,
+            micros: 0,
+        };
+        let source = mysql_row(columns, &[zero]).unwrap();
+        assert_eq!(
+            source,
+            postgres_text_row(columns, &[Some(zero_text)]).unwrap()
+        );
+        assert_ne!(source, postgres_text_row(columns, &[None]).unwrap());
+        assert_ne!(mysql_row(columns, &[RawValue::Null]).unwrap(), source);
+        let date_only = kind == ValueKind::Date;
+        let valid = RawValue::Date {
+            year: 2024,
+            month: 2,
+            day: 29,
+            hour: if date_only { 0 } else { 12 },
+            minute: if date_only { 0 } else { 34 },
+            second: if date_only { 0 } else { 56 },
+            micros: if date_only { 0 } else { 123400 },
+        };
+        assert_eq!(
+            mysql_row(columns, &[valid]).unwrap(),
+            postgres_text_row(columns, &[Some(valid_text)]).unwrap()
+        );
+        for invalid in ["infinity", "0000-00-00", "2023-02-29", "1970-01-01 BC"] {
+            assert!(postgres_text_row(columns, &[Some(invalid)]).is_err());
+        }
+    }
+    let timestamp = column(ValueKind::Timestamp, "timestamp(6)", "timestamptz(6)");
+    let columns = std::slice::from_ref(&timestamp);
+    assert_ne!(
+        postgres_text_row(columns, &[Some("2024-02-29 12:34:56.123400+00")]).unwrap(),
+        postgres_text_row(columns, &[Some("2024-02-29 12:34:56.123401+00")]).unwrap()
+    );
+    for invalid in [
+        "2024-02-29 12:34:56+01",
+        "2024-02-29 12:34:56",
+        "2024-02-29 24:00:00+00",
+        "2024-02-29 12:34:56.1234567+00",
+    ] {
+        assert!(postgres_text_row(columns, &[Some(invalid)]).is_err());
+    }
+    let wall = column(ValueKind::Datetime, "datetime(6)", "timestamp(6)");
+    assert_ne!(
+        postgres_text_row(&[wall], &[Some("1970-01-01 00:00:00")]).unwrap(),
+        postgres_text_row(columns, &[Some("1970-01-01 00:00:00+00")]).unwrap()
+    );
 }
 
 #[test]

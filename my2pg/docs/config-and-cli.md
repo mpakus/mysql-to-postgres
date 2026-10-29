@@ -52,6 +52,20 @@ object = "source.users.email_lower_unique"
 target_expression = "lower((email)::text)"
 ```
 
+## Explicit zero-date sentinel
+
+Use `transform = "zero-dates-to-epoch"` on a reviewed DATE/DATETIME/TIMESTAMP cast to preserve the distinction between a zero-date marker and genuine NULL during a fresh copy:
+
+```toml
+[[cast]]
+source_table = "products"
+source_column = "discarded_at"
+target_type = "timestamptz(6)"
+transform = "zero-dates-to-epoch"
+```
+
+The transform replaces only fully zero date/time components with 1970-01-01, using UTC for timestamptz. It preserves NULL and valid dates, rejects partial zero/invalid dates and fractional precision loss, and applies to literal defaults unless explicitly dropped. Reports count replaced source cells. It does not require dropping NOT NULL. The existing `zero-dates-to-null` behavior is unchanged. See [Strangler migration lessons](strangler-pgloader.md) for the sentinel collision, soft-deletion and old-import recovery boundaries.
+
 ## Built-in FULLTEXT replacement
 
 The Strangler FULLTEXT fix is available without handwritten SQL or a pgloader patch:
@@ -141,7 +155,7 @@ my2pg config import old.load --output migration.toml --target-schema legacy --co
 - `verify`: read-only comparison using the explicit completed run's `plan.json` and `report.json`. The report binds the plan and password-free source/target endpoint identities. Use the same endpoints that ran the migration; password rotation is allowed. It scans the MySQL source and PostgreSQL target again, so keep the source dataset unchanged since the run. It cannot reattach to the original `single_snapshot` or recover an append baseline, so append count verification reports unsupported and complete content verification of nonempty append targets remains unsupported.
 - `config import`: offline translation with compatibility diagnostics. No database access.
 
-Complete content verification supports signed/unsigned integers, exact decimals, text, booleans and `bytea`, including the supported transforms for those families. Binary checks compare every byte and distinguish NULL from empty values; PostgreSQL `bytea_output` does not affect the result. Keyless tables retain duplicate multiplicity through bounded external sorting. Other types still return explicit `unsupported` coverage; a successful count/schema check alone does not prove content equality. For a fresh migration, set `[verification] mode = "content"`; after a completed full migration, use the `verify --mode content` command above while the source remains unchanged.
+Complete content verification supports signed/unsigned integers, exact decimals, text, booleans, `bytea`, DATE and microsecond DATETIME/TIMESTAMP values, including supported transforms for those families. Binary checks compare every byte and distinguish NULL from empty values; PostgreSQL `bytea_output` does not affect the result. Temporal checks retain wall-time/UTC-instant distinctions and detect NULL/sentinel changes without applying transforms to target values. PostgreSQL sessions must retain ISO dates and UTC; infinity, BC dates and values outside the MySQL calendar range cannot certify equality. Keyless tables retain duplicate multiplicity through bounded external sorting. For a fresh migration, set `[verification] mode = "content"`; known unsupported types/transforms, views/non-InnoDB tables, empty selections and schema-only mode now fail planning with `CONTENT_VERIFICATION_UNSUPPORTED` before writes. A standalone `verify --mode content` on an older unsupported saved plan still reports unsupported coverage. A successful count/schema check alone does not prove content equality; keep the source unchanged for standalone verification.
 
 ## Console behavior
 

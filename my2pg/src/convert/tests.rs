@@ -239,6 +239,64 @@ fn negative_and_multi_day_time_remain_durations_and_bits_keep_width() {
 }
 
 #[test]
+fn epoch_transform_preserves_null_and_only_replaces_complete_zero_dates() {
+    for (kind, target, expected) in [
+        (ValueKind::Date, "date", "1970-01-01"),
+        (
+            ValueKind::Datetime,
+            "timestamp(6)",
+            "1970-01-01 00:00:00.000000",
+        ),
+        (
+            ValueKind::Timestamp,
+            "timestamptz(6)",
+            "1970-01-01 00:00:00.000000+00",
+        ),
+    ] {
+        let mut plan = column(kind, target);
+        plan.transform = Some("zero-dates-to-epoch".into());
+        let zero = RawValue::Date {
+            year: 0,
+            month: 0,
+            day: 0,
+            hour: 0,
+            minute: 0,
+            second: 0,
+            micros: 0,
+        };
+        assert_eq!(
+            encode_value(&plan, &zero).unwrap().as_deref(),
+            Some(expected)
+        );
+        assert!(transformation_applied(&plan, &zero).unwrap());
+        assert_eq!(encode_value(&plan, &RawValue::Null).unwrap(), None);
+        assert!(!transformation_applied(&plan, &RawValue::Null).unwrap());
+        plan.nullable = false;
+        assert_eq!(
+            encode_value(&plan, &zero).unwrap().as_deref(),
+            Some(expected)
+        );
+        assert!(encode_value(&plan, &RawValue::Null).is_err());
+        for text in [
+            "2024-00-03 00:00:00",
+            "0000-00-00 00:00:01",
+            "0000-00-00 00:00:00.000001",
+            "2023-02-29 00:00:00",
+        ] {
+            let invalid = temporal_default(&plan, text).unwrap();
+            assert!(encode_value(&plan, &invalid).is_err(), "{text}");
+            assert!(!transformation_applied(&plan, &invalid).unwrap());
+        }
+        let epoch = temporal_default(&plan, "1970-01-01 00:00:00").unwrap();
+        assert!(!transformation_applied(&plan, &epoch).unwrap());
+    }
+    let mut narrow = column(ValueKind::Datetime, "timestamp(3)");
+    narrow.transform = Some("zero-dates-to-epoch".into());
+    let valid = temporal_default(&narrow, "2024-02-29 12:34:56.123456").unwrap();
+    assert!(encode_value(&narrow, &valid).is_err());
+}
+
+#[test]
 fn explicit_transformed_null_still_respects_resolved_nullability() {
     let mut date = column(ValueKind::Datetime, "timestamp");
     date.transform = Some("zero-dates-to-null".into());

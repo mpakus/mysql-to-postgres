@@ -160,6 +160,53 @@ fn generated_inputs() -> (MigrationConfig, SourceCatalog, TargetCatalog) {
 }
 
 #[test]
+fn epoch_default_is_explicit_and_preserves_not_null() {
+    let (mut config, mut source, target) = inputs();
+    let mut date = column(&source, "discarded_at", "datetime");
+    date.column_type = "datetime(6)".into();
+    date.datetime_precision = Some(6);
+    date.nullable = false;
+    date.default = Some("0000-00-00 00:00:00.000000".into());
+    source.tables[0].columns.push(date);
+    assert!(codes(build(&config, &source, &target)).contains(&"DEFAULT_UNSUPPORTED".into()));
+    config.cast.push(CastRule {
+        source_table: Some("CamelCase".into()),
+        source_column: Some("discarded_at".into()),
+        target_type: Some("timestamptz(6)".into()),
+        transform: Some("zero-dates-to-epoch".into()),
+        ..Default::default()
+    });
+    let plan = build(&config, &source, &target).unwrap();
+    let date = plan.tables[0].columns.last().unwrap();
+    assert!(!date.nullable);
+    assert_eq!(
+        date.default_sql.as_deref(),
+        Some("E'1970-01-01 00:00:00.000000+00'")
+    );
+    source.tables[0].columns.last_mut().unwrap().default = Some("2024-00-01 00:00:00".into());
+    assert!(codes(build(&config, &source, &target)).contains(&"DEFAULT_UNSUPPORTED".into()));
+}
+
+#[test]
+fn unsupported_content_verification_is_blocked_during_planning() {
+    let (mut config, mut source, target) = inputs();
+    config.verification.mode = crate::config::VerificationMode::Content;
+    build(&config, &source, &target).unwrap();
+    let float = column(&source, "rate", "double");
+    source.tables[0].columns.push(float);
+    assert!(
+        codes(build(&config, &source, &target))
+            .contains(&"CONTENT_VERIFICATION_UNSUPPORTED".into())
+    );
+    source.tables[0].columns.pop();
+    config.migration.mode = MigrationMode::SchemaOnly;
+    assert!(
+        codes(build(&config, &source, &target))
+            .contains(&"CONTENT_VERIFICATION_UNSUPPORTED".into())
+    );
+}
+
+#[test]
 fn typed_temporal_defaults_reject_calendar_and_precision_errors_before_ddl() {
     let (config, mut source, target) = inputs();
     let mut date = column(&source, "date_value", "datetime");

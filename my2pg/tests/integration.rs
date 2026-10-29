@@ -19,6 +19,8 @@ mod t10_set_verification;
 mod t10_text_bytea;
 #[path = "cases/t10_values.rs"]
 mod t10_values;
+#[path = "cases/t10_zero_date_epoch.rs"]
+mod t10_zero_date_epoch;
 #[path = "cases/t11_catalog.rs"]
 mod t11_catalog;
 #[path = "cases/t11_cross_schema_run.rs"]

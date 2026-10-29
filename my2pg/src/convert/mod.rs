@@ -297,7 +297,8 @@ fn represent<'a>(
                 || matches!(value, RawValue::Bytes(bytes) if bytes.is_empty())
         }
         Some(
-            "tinyint-to-boolean"
+            "zero-dates-to-epoch"
+            | "tinyint-to-boolean"
             | "bits-to-boolean"
             | "remove-null-characters"
             | "right-trim"
@@ -587,6 +588,7 @@ pub fn transformation_applied(
         return Ok(false);
     }
     Ok(match column.transform.as_deref() {
+        Some("zero-dates-to-epoch") => full_zero_date(value),
         Some("zero-dates-to-null") => matches!(
             value,
             RawValue::Date { year: 0, .. }
@@ -721,7 +723,37 @@ fn decimal(column: &ColumnPlan, text: &str) -> Result<(), ConversionError> {
     }
     Ok(())
 }
+fn full_zero_date(value: &RawValue) -> bool {
+    matches!(
+        value,
+        RawValue::Date {
+            year: 0,
+            month: 0,
+            day: 0,
+            hour: 0,
+            minute: 0,
+            second: 0,
+            micros: 0
+        }
+    )
+}
+
 fn date(column: &ColumnPlan, value: &RawValue) -> Result<Scalar, ConversionError> {
+    let epoch = RawValue::Date {
+        year: 1970,
+        month: 1,
+        day: 1,
+        hour: 0,
+        minute: 0,
+        second: 0,
+        micros: 0,
+    };
+    let value =
+        if column.transform.as_deref() == Some("zero-dates-to-epoch") && full_zero_date(value) {
+            &epoch
+        } else {
+            value
+        };
     let RawValue::Date {
         year,
         month,

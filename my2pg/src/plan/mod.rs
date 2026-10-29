@@ -431,7 +431,7 @@ fn transform_compatible(column: &ColumnPlan) -> bool {
     match column.transform.as_deref() {
         None => true,
         Some("tinyint-to-boolean" | "bits-to-boolean") => column.kind == ValueKind::Boolean,
-        Some("zero-dates-to-null") => matches!(
+        Some("zero-dates-to-null" | "zero-dates-to-epoch") => matches!(
             column.kind,
             ValueKind::Date | ValueKind::Datetime | ValueKind::Timestamp
         ),
@@ -1068,6 +1068,16 @@ pub fn build(
     }
     generate_ddl(config, source, target, &mut plan);
     existing::apply(config, target, &mut plan);
+    if plan.verification == crate::config::VerificationMode::Content
+        && let Some(reason) = crate::verify::content::unsupported_plan_reason(&plan)
+    {
+        plan.diagnostics.push(diagnostic(
+            "CONTENT_VERIFICATION_UNSUPPORTED",
+            &config.target.schema,
+            &reason,
+            Severity::Error,
+        ));
+    }
     let errors: Vec<_> = plan
         .diagnostics
         .iter()

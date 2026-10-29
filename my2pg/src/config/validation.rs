@@ -519,6 +519,7 @@ fn sessions(settings: &BTreeMap<String, String>, source: bool) -> Result<(), Con
 
 pub const TRANSFORMS: &[&str] = &[
     "zero-dates-to-null",
+    "zero-dates-to-epoch",
     "tinyint-to-boolean",
     "bits-to-boolean",
     "empty-string-to-null",

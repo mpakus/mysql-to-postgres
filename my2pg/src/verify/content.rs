@@ -84,6 +84,42 @@ pub async fn verify_content(
     result
 }
 
+/// Known coverage gaps must fail planning, before a long COPY can mutate the target.
+pub fn unsupported_plan_reason(plan: &MigrationPlan) -> Option<String> {
+    if plan.mode == MigrationMode::SchemaOnly {
+        return Some("schema_only has no migrated content to verify".into());
+    }
+    if plan.tables.is_empty() {
+        return Some("content verification requires at least one selected table".into());
+    }
+    for table in &plan.tables {
+        if table.is_view || !table.engine.eq_ignore_ascii_case("InnoDB") {
+            return Some(format!(
+                "content verification requires an InnoDB base table: {}",
+                table.source_name
+            ));
+        }
+        if !table.columns.iter().any(|column| column.copy) {
+            return Some(format!(
+                "content verification requires copied columns: {}",
+                table.source_name
+            ));
+        }
+        for column in table.columns.iter().filter(|column| column.copy) {
+            if canonical::validate_columns(std::slice::from_ref(column)).is_err() {
+                return Some(format!(
+                    "content verification does not support {}.{} mapped to {} with transform {}",
+                    table.source_name,
+                    column.source_name,
+                    column.target_type,
+                    column.transform.as_deref().unwrap_or("none")
+                ));
+            }
+        }
+    }
+    None
+}
+
 async fn verify_content_inner(
     source: &mut SourceConnection,
     target: &mut TargetConnection,
@@ -104,8 +140,8 @@ async fn verify_content_inner(
             .push("content verifier called for another verification mode".into());
         return result;
     }
-    if plan.mode == MigrationMode::SchemaOnly {
-        return unsupported(result, "schema_only has no migrated content to verify");
+    if let Some(reason) = unsupported_plan_reason(plan) {
+        return unsupported(result, &reason);
     }
     if plan.on_existing == ExistingPolicy::Append && options.append_baseline.is_none() {
         return unsupported(
@@ -125,12 +161,6 @@ async fn verify_content_inner(
             "single_snapshot verification requires the migration's original source snapshot",
         );
     }
-    if plan.tables.is_empty() {
-        return unsupported(
-            result,
-            "content verification requires at least one selected table",
-        );
-    }
     let by_id: std::collections::BTreeMap<_, _> =
         reports.iter().map(|report| (&report.id, report)).collect();
     if by_id.len() != reports.len()
@@ -146,24 +176,6 @@ async fn verify_content_inner(
         );
     }
     for table in &plan.tables {
-        if table.is_view || !table.engine.eq_ignore_ascii_case("InnoDB") {
-            return unsupported(
-                result,
-                "content verification requires selected InnoDB base tables",
-            );
-        }
-        let columns: Vec<_> = table
-            .columns
-            .iter()
-            .filter(|column| column.copy)
-            .cloned()
-            .collect();
-        if canonical::validate_columns(&columns).is_err() {
-            return unsupported(
-                result,
-                "selected columns include a type or transform outside the canonical subset",
-            );
-        }
         let report = by_id[&table.id];
         if report.source_name != table.source_name
             || report.target_schema != table.target_schema

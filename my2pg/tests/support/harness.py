@@ -89,6 +89,7 @@ MYSQL_CASE_INVENTORY = (
     "t09_cli::actual_cli_sigterm_rolls_back_active_copy_and_persists_cancellation",
     "t10_binary_default::native_binary_defaults_recover_actual_bytes_without_source_rows_or_writes",
     "t10_text_bytea::native_text_bytea_preserves_bytes_defaults_and_parallel_readers",
+    "t10_zero_date_epoch::native_epoch_dates_preserve_null_defaults_and_temporal_content",
     "t10_empty_string_default::native_empty_text_defaults_remain_distinct_without_source_rows_or_writes",
     "t10_enum_metadata::supplementary_enum_set_labels_are_indistinguishable_from_question_marks_in_catalogs",
     "t10_label_recovery::native_recursive_cte_widens_enum_set_and_cannot_recover_labels",
