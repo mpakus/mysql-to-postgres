@@ -48,6 +48,7 @@ class ReferenceIndexTests(unittest.TestCase):
             (corpus / "target").mkdir()
             (parent / ".gitignore").write_text("nested/target/\n")
             (corpus / "source.rs").write_text("pub fn source() {}\n")
+            (corpus / "bin/buld").write_text("#!/usr/bin/env bash\nexit 0\n")
             (corpus / "bin/build-linux").write_text("#!/bin/sh\nexit 0\n")
             (corpus / "bin/build-windows.ps1").write_text("exit 0\n")
             (corpus / "target/ignored.rs").write_text("must not be indexed\n")
@@ -63,7 +64,7 @@ class ReferenceIndexTests(unittest.TestCase):
             with patch.object(index, "ROOT", parent):
                 documents, evidence = index.documents({"path": "nested", "prefix": "fixture", "commit": None})
             self.assertEqual(evidence["revision"], git("rev-parse", "HEAD"))
-            self.assertEqual(set(evidence["included"]), {"source.rs", "bin/build-linux", "bin/build-windows.ps1"})
+            self.assertEqual(set(evidence["included"]), {"source.rs", "bin/buld", "bin/build-linux", "bin/build-windows.ps1"})
             self.assertTrue(all(item["revision"] == evidence["revision"] for item in documents))
 
 

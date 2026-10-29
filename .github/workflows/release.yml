@@ -1,0 +1,101 @@
+name: Build and release
+
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            platform: macos
+            target: x86_64-apple-darwin
+          - runner: macos-15
+            platform: macos
+            target: aarch64-apple-darwin
+          - runner: ubuntu-24.04
+            platform: linux
+            target: x86_64-unknown-linux-gnu
+          - runner: ubuntu-24.04-arm
+            platform: linux
+            target: aarch64-unknown-linux-gnu
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libssl-dev
+      - name: Install pinned Rust
+        run: rustup toolchain install 1.99.0 --profile minimal --target '${{ matrix.target }}'
+      - name: Set incremental build version
+        run: echo "RELEASE_VERSION=$(python3 my2pg/bin/github-release.py stamp "$GITHUB_RUN_NUMBER")" >> "$GITHUB_ENV"
+      - name: Fetch locked dependencies for support checks
+        run: ./my2pg/bin/cargo fetch --locked
+      - name: Rust tests
+        run: ./my2pg/bin/cargo test --locked --all-targets --all-features -- --test-threads=1
+      - name: Support tests
+        run: python3 -m unittest discover -s my2pg/tests/support -p 'test_*.py' -v
+      - name: Build archive
+        run: ./bin/buld '${{ matrix.platform }}' --target '${{ matrix.target }}'
+      - name: Verify archive and native CLI
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          name="my2pg-$RELEASE_VERSION-$TARGET"
+          (cd my2pg/target/dist && shasum -a 256 --check "$name.tar.gz.sha256")
+          tar -xzf "my2pg/target/dist/$name.tar.gz" -C "$RUNNER_TEMP"
+          cd "$RUNNER_TEMP/$name"
+          shasum -a 256 --check SHA256SUMS
+          test "$(./my2pg --version)" = "my2pg $RELEASE_VERSION"
+          ./my2pg --help
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: my2pg-${{ matrix.target }}
+          path: my2pg/target/dist/*
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 7
+
+  release:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    concurrency:
+      group: my2pg-release-publish
+      queue: max
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: my2pg-*
+          path: dist
+          merge-multiple: true
+      - name: Publish verified release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          version=$(python3 my2pg/bin/github-release.py stamp "$GITHUB_RUN_NUMBER")
+          python3 my2pg/bin/github-release.py publish "$version" "$GITHUB_SHA" dist

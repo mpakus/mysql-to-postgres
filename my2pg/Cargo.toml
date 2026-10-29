@@ -10,6 +10,8 @@ include = [
     "/about.toml",
     "/bin/check-third-party-notices.sh",
     "/bin/cargo",
+    "/bin/buld",
+    "/bin/github-release.py",
     "/bin/build-release.py",
     "/bin/build-linux",
     "/bin/build-macos",

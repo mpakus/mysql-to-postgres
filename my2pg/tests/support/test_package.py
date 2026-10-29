@@ -33,6 +33,8 @@ class PackageBoundaryTests(unittest.TestCase):
             "LICENSE",
             "rust-toolchain.toml",
             "bin/cargo",
+            "bin/buld",
+            "bin/github-release.py",
             "bin/build-release.py",
             "bin/build-linux",
             "bin/build-macos",

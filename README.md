@@ -2,6 +2,8 @@
 
 A Rust command-line application in development for migrating **Oracle MySQL data and database structures to PostgreSQL**.
 
+Build locally with `./bin/buld` (macOS or Linux), or use `./bin/buld linux` to build Linux through Docker on macOS. Archives and checksums are written to `my2pg/target/dist/`. See [build instructions](my2pg/docs/releases.md) for CPU targets and prerequisites. Every branch push runs the root release workflow and publishes an incrementally versioned development build for macOS/Linux on Intel and ARM to [GitHub Releases](https://github.com/mpakus/mysql-to-postgres/releases) after all build checks pass.
+
 The Rust package builds and dispatches offline `check`, read-only `inspect`/`plan`, migration `run`, and a strict offline `.load` importer. These paths are being checked against disposable MySQL8.4/PostgreSQL16 databases; compatibility, recovery, concurrency and performance acceptance remain open. The importer supports a finite reviewed subset; see [configuration and CLI](docs/config-and-cli.md#strict-pgloader-importer) for flags and limits. This is not a release candidate. The sibling `pgloader/` checkout is the reference implementation.
 
 Start with [configuration and CLI](docs/config-and-cli.md), [architecture](docs/architecture.md), and [scope and compatibility](docs/scope-and-compatibility.md). A runnable [MySQL-to-PostgreSQL example](docs/examples/mysql-to-postgres.toml) shows the supported connection and migration settings.

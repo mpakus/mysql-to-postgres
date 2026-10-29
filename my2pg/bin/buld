@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+
+case "${1:-}" in
+  -h|--help)
+    cat <<'EOF'
+Usage: bin/buld [macos|linux] [build options]
+
+Defaults to the current OS and CPU. Linux builds on macOS use Docker.
+Options are forwarded to build-release.py (requires Python 3.9+).
+
+  bin/buld --offline
+  bin/buld macos --target x86_64-apple-darwin
+  bin/buld linux --docker --target x86_64-unknown-linux-gnu
+  bin/buld linux --help
+EOF
+    exit 0
+    ;;
+  macos|linux) platform=$1; shift ;;
+  -*|'')
+    case "$(uname -s)" in
+      Darwin) platform=macos ;;
+      Linux) platform=linux ;;
+      *) echo 'Unsupported host; choose linux explicitly to build with Docker.' >&2; exit 2 ;;
+    esac
+    ;;
+  *) echo "Unknown platform: $1 (choose macos or linux)" >&2; exit 2 ;;
+esac
+
+exec "$root/bin/build-$platform" "$@"

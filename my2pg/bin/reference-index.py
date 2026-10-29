@@ -17,7 +17,7 @@ EXTENSIONS = {".rs", ".lisp", ".clj", ".cljs", ".edn", ".asd", ".load", ".sql",
               ".py", ".ps1", ".c", ".h", ".ppl", ".out", ".csv", ".stderr", ".patch",
               ".pm", ".pl", ".pod", ".PL"}
 NAMES = {"Makefile", "Dockerfile", "LICENSE", "LICENSE-MIT", "LICENSE-APACHE", "COPYING",
-         "build-linux", "build-macos", "README", "INSTALL", "MANIFEST", "changelog",
+         "buld", "build-linux", "build-macos", "README", "INSTALL", "MANIFEST", "changelog",
          "ora2pg", "ora2pg_scanner"}
 IGNORED = {"target", "build", "dist", "node_modules", "__pycache__", "vendor"}
 SYMBOLS = re.compile(r"(?:\b(?:fn|struct|enum|trait|type|mod|const|sub)\s+|"
